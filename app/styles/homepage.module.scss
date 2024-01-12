@@ -1,0 +1,14 @@
+@import 'variables';
+
+#homepageContainer{
+	
+	background-color: transparent;
+	color: $secondary-color;
+	
+	#logoImage{
+	border-radius: 100%;
+	width: 200px;
+	height: 200px;
+	}	
+
+}
