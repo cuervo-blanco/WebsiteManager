@@ -24,10 +24,7 @@ const server = express();
     console.log('Database Connected Successfully');
     release();
 
-	server.get('/api/login', (req: any, res: any) => {
-	/* verify login credentials */
-});
-
+	server.post('/api/login/password', passport.authenticate('local'));
 // Next.js page handling
   server.get('*', (req: any, res: any) => {
     return handle(req, res);

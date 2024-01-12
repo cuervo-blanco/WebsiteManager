@@ -10,12 +10,12 @@ const Homepage = () => {
 			<h1>My Website Manager</h1>
 			<div id={styles.formContainer}>
 				<Image id={styles.logoImage} src={logo} alt="logo little boy with hammer"/>
-				<form action="/api/login"> 
-					<label htmlFor="user-id"></label>User ID:<br/>
-					<input type="text" id="user-id" name="user-id"/><br/>
-					<label htmlFor="access-key"> Access Key:</label><br/>
-					<input type="text" id="access-key" name="access-key"/><br/>
-					<input type="submit"/>
+				<form action="/api/login/password" method="post"> 
+					<label htmlFor="username"></label>Username:<br/>
+					<input type="text" id="username" name="username"/><br/>
+					<label htmlFor="password"> Password:</label><br/>
+					<input type="text" id="password" name="password"/><br/>
+					<button type="submit"> Sign In</button>
 				</form>
 			</div>
 			</div>
