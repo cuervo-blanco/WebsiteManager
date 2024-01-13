@@ -12,9 +12,9 @@ const Homepage = () => {
 				<Image id={styles.logoImage} src={logo} alt="logo little boy with hammer"/>
 				<form action="/api/login/password" method="post"> 
 					<label htmlFor="username"></label>Username:<br/>
-					<input type="text" id="username" name="username"/><br/>
-					<label htmlFor="password"> Password:</label><br/>
-					<input type="text" id="password" name="password"/><br/>
+					<input type="text" id="username" name="username" required autoFocus/><br/>
+					<label htmlFor="current-password"> Password:</label><br/>
+					<input type="password" id="current-password" autoComplete="current-password" name="password" required /><br/>
 					<button type="submit"> Sign In</button>
 				</form>
 			</div>

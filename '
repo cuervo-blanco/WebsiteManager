@@ -5,26 +5,42 @@ import express from 'express';
 import next from 'next';
 import pool from './db';
 
+const db = pool;
+
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
+
+var passport = require('passport');
+import strategy from './passport';
+
+passport.use(strategy);
 
 
 //let bodyParser = require('body-parser');
 //app.use(bodyParser.json());
 //app.use(bodyParser.urlencoded({ extended: false }));
-
-app.prepare().then(() => {
-const server = express();
+//
+//
 	
-	pool.connect((err: any, client: any, release: any) => {
+	db.connect((err: any, client: any, release: any) => {
     if (err) {
-      throw new Error(`Database connection error: ${err.stack}`);
+      console.error(`Database connection error: ${err.stack}`);
+	  return;
     }
     console.log('Database Connected Successfully');
     release();
+	});
 
-	server.post('/api/login/password', passport.authenticate('local'));
+app.prepare().then(() => {
+const server = express();
+
+	
+
+	server.post('api/login/password',
+				passport.authenticate('local', { successRedirect: '/dashboard', failureRedirect: '/' }), 
+				);
+
 // Next.js page handling
   server.get('*', (req: any, res: any) => {
     return handle(req, res);
