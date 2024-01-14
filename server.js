@@ -17,6 +17,13 @@ const SQLiteStoreModule = SQLiteStore(session);
 
 passport.use(strategy);
 
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/'); // Redirect to homepage if not authenticated
+}
+
 app.prepare().then(() => {
   const server = express();
 
@@ -51,6 +58,21 @@ app.prepare().then(() => {
 	  next(); 
   }, passport.authenticate('local', { successRedirect: '/dashboard', failureRedirect: '/not-found'})
   );
+
+server.post('/api/logout', function(req, res, next) {
+  req.logout(function(err) {
+    if (err) { return next(err); }
+	  console.log('Succesfully logged out');
+	  res.status(200).send('Logged out');
+  });
+});
+
+	// Protected route example
+	server.get('/dashboard', ensureAuthenticated, (req, res) => {
+		 return app.render(req, res, '/dashboard', req.query);
+	});
+
+
 
   // Next.js page handling
   server.get('*', (req, res) => {
