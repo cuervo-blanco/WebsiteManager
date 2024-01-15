@@ -37,6 +37,7 @@ app.prepare().then(() => {
   server.use(express.json());
   server.use(express.urlencoded({ extended: true }));
 
+
   // Database health check endpoint
   server.get('/api/dbcheck', (req, res) => {
     pool.connect((err, client, release) => {
@@ -84,6 +85,13 @@ app.prepare().then(() => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+
+	
+	server.get('/api/auth-check', (req, res) => {
+	 const isAuthenticated = req.isAuthenticated();
+	 // Render the Next.js homepage with the authentication statu
+		res.send(isAuthenticated);
+	});
 
   // Protected routes for different admin panel sections
   server.get('/admin-panel', ensureAuthenticated, (req, res) => {
