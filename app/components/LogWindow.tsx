@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import logo from  '../../public/logo.png';
 import styles from '../styles/LogWindow.module.scss';
+import Link from 'next/link';
 
 const LogWindow = () => {
 
@@ -28,7 +29,7 @@ useEffect(() => {
 					<input type="password" id="current-password" autoComplete="current-password" name="password" required /><br/>
 					<button type="submit"> Sign In</button>
 				</form>} 
-				{logStatus && <div> You're authenticated man</div>}
+				{logStatus && <div> <h1>You're already logged in</h1><Link href="/admin-panel">Go to your admin panel</Link></div>}
 	</div>
 	)
 }
