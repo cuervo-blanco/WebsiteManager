@@ -1,0 +1,16 @@
+#imageBlockContainer{
+width: 400px;
+height: 400px;
+border: 3px solid grey;
+background-color: black;
+overflow: hidden;
+display: flex;
+margin: 10px;
+
+
+img {
+	object-fit: contain;
+	width: 100%;
+}
+
+}
