@@ -5,6 +5,7 @@ import styles from '../styles/fileUploader.module.scss';
 
 const FileUploader = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [altText, setAltText] = useState('');
   const fileInputRef = useRef(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,15 +19,25 @@ const FileUploader = () => {
     }
   };
 
+  const handleAltTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setAltText(event.target.value);
+	    };
+
   const handleUpload = async () => {
     if (selectedFile) {
+		
+		const formData = new FormData();
+		formData.append('file', selectedFile);
+		formData.append('alt', altText);
+
       try {
-        const result = await uploadFile(selectedFile);
+        const result = await uploadFile(formData);
         console.log('Upload result:', result);
       } catch (error) {
         console.error('Error during file upload:', error);
       }
       setSelectedFile(null); // Clear the selected file after upload
+	  setAltText('');
       clearFileInput();
     }
   };
@@ -43,8 +54,9 @@ const FileUploader = () => {
         ref={fileInputRef}
         type="file"
         accept="image/*, audio/*, video/*, .pdf"
-        onChange={handleFileChange}
+        onChange={handleFileChange} required
       />
+	  <input type="text"  value={altText} name="alt" onChange={handleAltTextChange} placeholder="Enter short description for the image" required/> 
       <button onClick={handleUpload}>Upload File</button>
     </div>
   );
