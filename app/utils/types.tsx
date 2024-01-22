@@ -8,9 +8,11 @@ export interface WindowProps {
 
 
 export interface ImageSlotProps {
-	src: string;
-	alt: string;
+	src: string |  undefined;
+	alt: string | undefined;
 	link: string;
+	select: Function; 
+	connectionId: string;
 }
 
 export interface ComponentConfig {

@@ -6,7 +6,7 @@ import passport from 'passport';
 import strategy from './passport.js';
 import session from 'express-session';
 import SQLiteStore from 'connect-sqlite3';
-import { getUserPages } from './db.js';
+import { getUserPages, getGalleryImages, saveChangesGallery } from './db.js';
 
 // Load environment variables
 dotenv.config();
@@ -65,7 +65,8 @@ app.prepare().then(() => {
   // Login route
   server.post('/api/login/password', (req, res, next) => { 
     next(); 
-  }, passport.authenticate('local', { successRedirect: '/admin-panel', failureRedirect: '/not-found' }));
+  }, passport.authenticate('local', { successRedirect: '/admin-panel', failureRedirect: '/' }), 
+  );
 
   // Logout route
   server.post('/api/logout', function(req, res, next) {
@@ -85,6 +86,43 @@ app.prepare().then(() => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+
+
+ server.get('/api/gallery-images', async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const galleryImages = await getGalleryImages(userId);
+      res.json(galleryImages);
+    } catch (error) { 
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+ server.post('/admin-panel/api/save-changes', async (req, res, next) => { 
+		try{
+
+		const changes = req.body.changes;
+		const userId = req.user.id;
+		const result = await saveChangesGallery(userId, changes);
+		res.json(result);
+		
+		} catch(err){
+			res.status(500).json({error: 'Internal Server Error'});
+		}	
+	}
+  );
+
+
+	server.get('/api/user', (req, res) => {
+		if (req.isAuthenticated()) {
+			const userData = {
+			domain: req.user.domain
+			};
+			res.json(userData);
+		} else {
+		res.status(401).send({ error: 'User not authenticated' });
+		}
+	});
 
 	
 	server.get('/api/auth-check', (req, res) => {

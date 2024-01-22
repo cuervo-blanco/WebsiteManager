@@ -12,9 +12,8 @@ var strategy = new LocalStrategy(function verify(username, password, cb) {
     if (err) { return cb(err); }
     if (result.rows.length === 0) { return cb(null, false, { message: 'Incorrect username or password.' }); }
 
-	  console.log(result.rows[0]);
-	 
 	const user = result.rows[0];
+	  console.log('Domain: ', user.domain);
 		const saltBuffer = Buffer.from(user.salt, 'hex');
 
     crypto.pbkdf2(password, saltBuffer, 310000, 32, 'sha256', function(err, hashedPassword) {
@@ -30,7 +29,7 @@ var strategy = new LocalStrategy(function verify(username, password, cb) {
 
 passport.serializeUser(function(user, cb) {
   process.nextTick(function() {
-    cb(null, { id: user.user_id, username: user.username });
+    cb(null, { id: user.user_id, username: user.username, domain: user.domain });
   });
 });
 

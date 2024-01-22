@@ -1,6 +1,7 @@
 #toggleWindowContainer{
-	#boxContent{
+	#windowContent{
 	display: flex;
 	flex-direction: rows;
+	flex-wrap: wrap;
 	}
 }
