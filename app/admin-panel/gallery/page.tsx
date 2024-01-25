@@ -1,112 +1,121 @@
 'use client';
-import React, {useState, useEffect} from 'react';
-import styles from '../../styles/gallery.module.scss';
-import ToggleWindow from '../../components/ToggleWindow';
+import React, { useState, useEffect } from 'react';
+import styles from '../../styles/gallery.module.scss'
 import MediaViewer from '../../components/MediaViewer';
 import ImageSlot from  '../../components/ImageSlot';
 import SelectWindow from '../../components/SelectWindow'; 
 import { updateIllustrations } from '../../utils/fileUploadUtils';
+import LinkEditor from '../../components/LinkEditor';
+import ToggleWindow from '../../components/ToggleWindow';
+import MediaInfoCard from '../../components/MediaInfoCard';
+import { Content } from '../../utils/types';
 
-interface LoadedImages {
-	connection_id: string;
-	src: string | undefined;
-	alt: string | undefined;
-	link: string;
-}
+
 
 
 const Gallery = () => {
-
-		const [selectedImage, setSelectedImage] = useState<[string, string] | [] >([]);
-		const [selectedImageSlotId, setSelectedImageSlotId] = useState<string>("");
-		const [loadedImages, setLoadedImages] = useState<LoadedImages[]>([])
-		const [showEditOptions, setShowEditOptions] = useState<boolean>(false);	
-		const [showMediaGallery, setShowMediaGallery] = useState<boolean>(false);
-		const [editMade, setEditMade] = useState<boolean>(false);
-
-		console.log('Selected Image slot: ', selectedImageSlotId);
+	const [selectedMedia, setSelectedMedia] = useState<[string, string] | [] >([]);
+	const [selectedItemId, setSelectedItemId] = useState<string>("");
+	const [loadedContent, setLoadedContent] = useState<Content[]>([])
+	const [isEditOptionsVisible, showEditOptions] = useState<boolean>(false);	
+	const [isMediaGalleryVisible, showMediaGallery] = useState<boolean>(false);
+	const [isEditMade, setEditMade] = useState<boolean>(false);
+	const [isLinkEditorVisible, showLinkEditor] = useState<boolean>(false);
 
 
 
-		const handleImageSelected = (imageSelected: [string, string]) => {
-			setSelectedImage(imageSelected);
+		const handleMediaSelected = (mediaSelected: [string, string]) => {
+			setSelectedMedia(mediaSelected);
 		}
 
 	useEffect(() => {
-	fetch('/api/gallery-images')
+	fetch('/api/get-gallery-content')
             .then(response => response.json())
             .then(data => {
-                setLoadedImages(data);
+                setLoadedContent(data);
             });
     }, []);
 
-	const handleSelectSlotId = (selectedSlot: string) => {
-		setShowEditOptions(true);
-		setSelectedImageSlotId(selectedSlot);	
+	const handleItemSelection= (selectedId: string) => {
+		showEditOptions(true);
+		showLinkEditor(false);
+		setSelectedItemId(selectedId);	
 	}
 
-	const handleOpenMediaGallery = () => { 
-		setShowMediaGallery(true);
-		setShowEditOptions(false);
+	const toggleMediaGalleryVisibility = () => { 
+		showMediaGallery(true);
+		showEditOptions(false);
 	} 
 
-	const handleSetImageSlot = () => {
-	//First we destructure the src and alt from the selectedImage
-	const [newSrc, newAlt] = selectedImage || [ '', '' ]; 
-	//Now we find the index of the image slot with the matching connectionId
-	const indexToUpdate = loadedImages.findIndex(image => image.connection_id === selectedImageSlotId);
-	// If a match is found
-	if(indexToUpdate !== -1) {
-	//Create a new array with the updated image slot
-		const updatedImages = [
-			...loadedImages.slice(0, indexToUpdate),
-			{... loadedImages[indexToUpdate], src: newSrc!, alt: newAlt! },
-			...loadedImages.slice(indexToUpdate + 1)
-		];
-	//Update the state with the new array
-	setLoadedImages(updatedImages);
-	}
-
-	setShowMediaGallery(false);
-	setEditMade(true);
-
-
-	}
-
-	
-const handleSaveChanges = async (changes: LoadedImages[]) => {
-    try {
-        // First endpoint
-        const result = await updateIllustrations(changes);
-		setEditMade(false);
-        console.log('Upload result:', result);
-      } catch (error) {
-        console.error('Error during file upload:', error);
+	const updateSelectedSlot = () => {
+		//First we destructure the src and alt from the selectedImage
+		const [newSrc, newAlt] = selectedMedia || [ '', '' ]; 
+		//Now we find the index of the image slot with the matching connectionId
+		const indexToUpdate = loadedContent.findIndex(image => image.connection_id === selectedItemId);
+		// If a match is found
+		if(indexToUpdate !== -1) {
+		//Create a new array with the updated image slot
+			const updatedImages = [
+				...loadedContent.slice(0, indexToUpdate),
+				{... loadedContent[indexToUpdate], src: newSrc!, alt: newAlt! },
+				...loadedContent.slice(indexToUpdate + 1)
+			];
+			//Update the state with the new array
+			setLoadedContent(updatedImages);
+		}
+		showMediaGallery(false);
 		setEditMade(true);
-      }
-}
+	}
 
+	const handleSaveChanges = async (changes: Content[]) => {
+		try {
+			// First endpoint
+			const result = await updateIllustrations(changes);
+			setEditMade(false);
+			console.log('Upload result:', result);
+		} catch (error) {
+			console.error('Error during file upload:', error);
+			setEditMade(true);
+		  }
+	}
 
+	const handleEditLink = () => {
+	showLinkEditor(true);
+	showEditOptions(false);
+	}
+
+	const handleLinkUpdate = (updatedLink: Content[]) => {
+		setLoadedContent(updatedLink);
+		setEditMade(true);
+		showLinkEditor(false);
+	}
 
 	return(
 	<div id={styles.galleryContainer}>
 		<h1>Welcome to the gallery editor!</h1>
-		{ showMediaGallery && <MediaViewer sendSelect={handleImageSelected} modalWindow={true} setImageSlot={handleSetImageSlot}/> } 
-		{ showEditOptions && <SelectWindow select={handleOpenMediaGallery}/>}
+		{ isMediaGalleryVisible && <MediaViewer sendSelect={handleMediaSelected} modalWindow={true} setImageSlot={updateSelectedSlot}/> } 
+		{ isLinkEditorVisible && <LinkEditor items={loadedContent} connection_id={selectedItemId} onItemsUpdate={handleLinkUpdate}/>}
+		{ isEditOptionsVisible && <SelectWindow select={toggleMediaGalleryVisibility} editLink={handleEditLink}/>}
 
 		<ToggleWindow title="Illustrations" rows={3} behavior="fixed"> 
-			{loadedImages.map(slot  => 	
+			{loadedContent.map(slot  => 	
 				<ImageSlot
 					key={slot.connection_id}
 					src={slot.src}
 					alt={slot.alt}
 					link={slot.link}
-					select={handleSelectSlotId}
-					connectionId={slot.connection_id}
+					setSelectedId={handleItemSelection}
+					connection_id={slot.connection_id}
 					/>  
 			)}
 		</ToggleWindow>
-		{editMade && <button onClick={() => handleSaveChanges(loadedImages)}>Save Changes</button>}
+		<ToggleWindow title="Products & Services" rows={3} behavior="additive" >
+
+		{/*Map through the loadedContent to generate MediaInfoCard components */} 
+		<MediaInfoCard/>
+
+		</ToggleWindow>
+		{isEditMade && <button onClick={() => handleSaveChanges(loadedContent)}>Save Changes</button>}
 	</div>
 	)
 }

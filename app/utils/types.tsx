@@ -1,31 +1,47 @@
+export type Behavior = 'fixed' | 'additive';
+export type ComponentType = 'ImageSlot'; // Add more types like '| "AnotherComponentType"';
+export type SetStateFunction<T> = (value: T) => void;
+
+export interface BasicContent {
+  connection_id: string;
+  src: string | undefined;
+  alt: string | undefined;
+  link: string;
+}
+
+export interface Content extends BasicContent {
+  title?: string;
+  body?: string;
+  published_date?: Date;
+  subtitle?: string;
+  content_type: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design';
+}
 
 export interface WindowProps {
-	children: React.ReactNode;
-	title: string;
-	rows: number;
-	behavior: Behavior;
-	}
-
-
-export interface ImageSlotProps {
-	src: string |  undefined;
-	alt: string | undefined;
-	link: string;
-	select: Function; 
-	connectionId: string;
+  children: React.ReactNode;
+  title: string; // Changed Title to title for consistency
+  rows: number;
+  behavior: Behavior;
 }
 
-export interface ComponentConfig {
-	type: ComponentType;
-	quantity: number;
-	parameters: ComponentProps[];
+export interface ImageSlotProps extends BasicContent {
+  setSelectedId: SetStateFunction<string>; // Using a more specific function type
 }
 
-export type ComponentType = 'ImageSlot' // Add more types like '| "another component type";
-// Union type
-export type ComponentProps = ImageSlotProps; // can add more with |
+export interface LinkEditorProps {
+  connection_id: string | undefined;
+  items: Content[];
+  onItemsUpdate: SetStateFunction<Content[]>; // Using a more specific function type
+}
 
-export type Behavior = 'fixed' | 'additive';
+export interface MediaViewer {
+  sendSelect: SetStateFunction<[string, string]> | null; // Assuming sendSelect updates a state of type [string, string]
+  modalWindow: boolean;
+  setImageSlot: Function; // Consider defining a more specific type for setImageSlot
+}
+
+export type Item = Pick<BasicContent, 'connection_id' | 'link'>;
+
 
 
 

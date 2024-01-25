@@ -6,7 +6,7 @@ import passport from 'passport';
 import strategy from './passport.js';
 import session from 'express-session';
 import SQLiteStore from 'connect-sqlite3';
-import { getUserPages, getGalleryImages, saveChangesGallery } from './db.js';
+import { getUserPages, getGalleryContent, saveChangesGallery } from './db.js';
 
 // Load environment variables
 dotenv.config();
@@ -88,11 +88,11 @@ app.prepare().then(() => {
   });
 
 
- server.get('/api/gallery-images', async (req, res) => {
+ server.get('/api/get-gallery-content', async (req, res) => {
     try {
       const userId = req.user.id;
-      const galleryImages = await getGalleryImages(userId);
-      res.json(galleryImages);
+      const galleryContent = await getGalleryContent(userId);
+      res.json(galleryContent);
     } catch (error) { 
       res.status(500).json({ error: 'Internal Server Error' });
     }

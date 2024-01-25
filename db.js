@@ -35,14 +35,14 @@ async function getUserPages(userId) {
     }
 }
 
-async function getGalleryImages(userId) {
+async function getGalleryContent(userId) {
 		try{
-			const query = 'SELECT connection_id, src, alt, link FROM user_gallery_images WHERE user_id = $1 ORDER BY connection_id';
+			const query = 'SELECT connection_id, src, alt, link, section_id, title, description, subtitle FROM contents WHERE user_id = $1 ORDER BY connection_id';
 			const value = [userId];
 			const result = await pool.query(query, value);
 			return result.rows;
 		} catch(err) {
-			console.error('Error getting initial images for gallery', err.stack);
+			console.error('Error getting initial content for gallery', err.stack);
 			throw err;
 		}
 
@@ -53,7 +53,7 @@ async function saveChangesGallery(userId, data) {
 
 			const actions = data.map( async (image) => {
 				
-				const query = 'UPDATE user_gallery_images SET src = $1, alt = $2, link = $3 WHERE user_id = $4 AND connection_id = $5';
+				const query = 'UPDATE contents SET src = $1, alt = $2, link = $3, section_id, title, description, subtitle WHERE user_id = $4 AND connection_id = $5' ;
 				const values = [image.src, image.alt, image.link, userId, image.connection_id];
 				const result = await pool.query(query, values);
 				return result;
@@ -77,6 +77,6 @@ async function getPageComponents(pageId) {
 
 
 
-export { getUserPages, getGalleryImages, saveChangesGallery};
+export { getUserPages, getGalleryContent, saveChangesGallery};
 export default pool;
 

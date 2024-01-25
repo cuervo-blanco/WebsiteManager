@@ -5,25 +5,19 @@ import ImageBlock from './ImageBlock';
 import io from 'socket.io-client';
 import { fetchData } from '../utils/fetchImages'; 
 import { deleteImage } from '../utils/imageGetUtils';
-
-interface MediaViewer {
-	sendSelect: Function | null;
-	modalWindow: boolean;
-	setImageSlot: Function;
-
-}
+import { MediaViewer } from '../utils/types';
 
 
 function MediaViewer({ sendSelect, modalWindow, setImageSlot}: MediaViewer) {
 
 	//States
-	const [images, setImages] = useState<{url: string, image_id: string, alt: string}[]>([]);
+	const [mediaInfo, setMediaInfo] = useState<{url: string, image_id: string, alt: string}[]>([]);
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [limit, setLimit] = useState(25);
-	const [selectedImage, setSelectedImage] = useState<[string, string] | []>([]);
+	const [selectedMedia, setSelectedMedia] = useState<[string, string] | []>([]);
 	const [loading, setLoading] = useState(true);
-	const [ImageSelected, setImageSelected] = useState(false);
+	const [MediaSelected, setMediaSelected] = useState(false);
 	const isMounted = useRef(true);
 
 
@@ -32,20 +26,20 @@ function MediaViewer({ sendSelect, modalWindow, setImageSlot}: MediaViewer) {
 
 		const socket = io('http://localhost:3002');
 
-		fetchData(page, limit, setImages, setTotalPages, setLoading, isMounted);
+		fetchData(page, limit, setMediaInfo, setTotalPages, setLoading, isMounted);
 
 		const onImageUploaded = (data: any) => {
 			console.log('Image uploaded event received:', data.message);
 			if(isMounted){
-			fetchData(page, limit, setImages, setTotalPages, setLoading, isMounted);
+			fetchData(page, limit, setMediaInfo, setTotalPages, setLoading, isMounted);
 			}
 		}
 
 		const onImageDeleted = (data: any) => {
 			console.log('Image deleted event received:', data.message);
 			if(isMounted){
-			fetchData(page, limit, setImages, setTotalPages, setLoading, isMounted);
-			setSelectedImage([]);
+			fetchData(page, limit, setMediaInfo, setTotalPages, setLoading, isMounted);
+			setSelectedMedia([]);
 			}
 		}
 
@@ -63,27 +57,27 @@ function MediaViewer({ sendSelect, modalWindow, setImageSlot}: MediaViewer) {
 
 
 	const handleImageSelect = (ImageUrl: string, ImageAlt: string) => {
-	console.log("handleImageSelect called with URL:", selectedImage);
+	console.log("handleImageSelect called with URL:", selectedMedia);
 	// Pass the selected image URL to the parent component
-		if (selectedImage.length === 0) {
+		if (selectedMedia.length === 0) {
 			sendSelect([ImageUrl, ImageAlt]);
-			setImageSelected(true);
+			setMediaSelected(true);
 			}
 
-		 else if (ImageUrl === selectedImage[0]) {
+		 else if (ImageUrl === selectedMedia[0]) {
 			sendSelect([]);
-			setImageSelected(false);
+			setMediaSelected(false);
 		} else {
 			//add second image to the selected image array
 		}
 	};
 
-	const handleDeleteImage = (toDeleteImage: string) => {
-		deleteImage(toDeleteImage);
+	const handleDeleteMedia = (toDeleteMedia: string) => {
+		deleteImage(toDeleteMedia);
 	}
 	const setImage = () => {
 		if (sendSelect !== null) {
-		setImageSlot(selectedImage);
+		setImageSlot(selectedMedia);
 		}
 	}
 
@@ -91,12 +85,12 @@ function MediaViewer({ sendSelect, modalWindow, setImageSlot}: MediaViewer) {
     return (
         <div id={styles.mediaViewerContainer}>
             {/* Display delete button if an image is selected */}
-            {selectedImage.length !== 0 && <button onClick={() => handleDeleteImage(selectedImage[0])}>Delete</button>}
+            {selectedMedia.length !== 0 && <button onClick={() => handleDeleteMedia(selectedMedia[0])}>Delete</button>}
             {/* Render loading state, images, or 'no images' message based on the current state */}
             {loading ? (
                 <div>Loading...</div>
-            ) : images.length > 0 ? (
-                images.map(image => (
+            ) : mediaInfo.length > 0 ? (
+                mediaInfo.map(image => (
                     <ImageBlock 
                         imgUrl={image.url} 
                         key={image.image_id} 
@@ -109,7 +103,7 @@ function MediaViewer({ sendSelect, modalWindow, setImageSlot}: MediaViewer) {
                 <div>No images to display</div> 
             )}
 
-			{modalWindow && ImageSelected && <button onClick={setImage}>Select Image</button>}
+			{modalWindow && MediaSelected && <button onClick={setImage}>Select Image</button>}
 
             {/* Pagination buttons */}
             {page > 1 && <button onClick={() => setPage(page - 1)}>Previous</button>}

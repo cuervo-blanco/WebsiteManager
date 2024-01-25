@@ -2,11 +2,11 @@ import  React from 'react';
 import styles  from '../styles/SelectWindow.module.scss';
 
 
-const SelectWindow = ({select}) => {
+const SelectWindow = ({select, editLink}) => {
 	return(
 	<div id={styles.selectWindowContainer}>
 		<ul>
-			<li>edit link</li>
+			<li onClick={editLink}>edit link</li>
 			<li onClick={select}>edit image</li>
 		</ul>
 	</div>
