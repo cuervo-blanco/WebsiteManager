@@ -51,10 +51,10 @@ async function getGalleryContent(userId) {
 async function saveChangesGallery(userId, data) {
 		try{
 
-			const actions = data.map( async (image) => {
+			const actions = data.map( async (item) => {
 				
-				const query = 'UPDATE contents SET src = $1, alt = $2, link = $3, section_id, title, description, subtitle WHERE user_id = $4 AND connection_id = $5' ;
-				const values = [image.src, image.alt, image.link, userId, image.connection_id];
+	const query = 'UPDATE contents SET src = $1, alt = $2, link = $3, section_id = $4, title = $5, description = $6, subtitle = $7 WHERE user_id = $8 AND connection_id = $9' ;
+				const values = [item.src, item.alt, item.link, item.section_id, item.title, item.description, item.subtitle, userId, item.connection_id];
 				const result = await pool.query(query, values);
 				return result;
 			});

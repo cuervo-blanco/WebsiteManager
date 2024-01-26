@@ -5,16 +5,17 @@ export type SetStateFunction<T> = (value: T) => void;
 export interface BasicContent {
   connection_id: string;
   src: string | undefined;
-  alt: string | undefined;
+  alt: string | undefined ;
   link: string;
 }
 
 export interface Content extends BasicContent {
-  title?: string;
-  body?: string;
-  published_date?: Date;
+  title?: string | "" | undefined ;
+  body?: string |  ""  | undefined;
+  published_date?: Date | undefined;
   subtitle?: string;
-  content_type: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design';
+  section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design';
+  description?: string;
 }
 
 export interface WindowProps {

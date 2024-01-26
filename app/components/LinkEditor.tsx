@@ -9,13 +9,10 @@ const LinkEditor: React.FC<LinkEditorProps> = ( {items, connection_id, onItemsUp
 	const [link, setLink] = useState(''); 
 
 	const findItemById = (items: Content[], id: string | undefined): Item | undefined => {
-
 		if (id === undefined) {
 			return undefined;
 		}
-
 		return items.find(item => item.connection_id === id);
-
 	};
 	
 	useEffect(() => {
@@ -33,8 +30,7 @@ const LinkEditor: React.FC<LinkEditorProps> = ( {items, connection_id, onItemsUp
 
 	const handleButtonClick = () => {
 		//Find the item by ID, update its link property
-//Use onItemsUpdate to send the updated items back to the parent component
-		
+		//Use onItemsUpdate to send the updated items back to the parent component
 		const indexToUpdate = items.findIndex(item => item.connection_id === connection_id);
 		if(indexToUpdate !== -1) {
 			const updatedImages = [

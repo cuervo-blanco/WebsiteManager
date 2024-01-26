@@ -22,7 +22,8 @@
     "react": "^18",
     "react-dom": "^18",
     "sass": "^1.69.7",
-    "socket.io-client": "^4.7.4"
+    "socket.io-client": "^4.7.4",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/connect-sqlite3": "^0.9.5",
@@ -33,6 +34,7 @@
     "@types/passport-local": "^1.0.38",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/uuid": "^9.0.7",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.0.4",
