@@ -20,7 +20,7 @@ export const uploadFile = async (formData) => {
 }
 
 
-export const updateIllustrations = async (changes) => {
+export const updateContent = async (changes) => {
 
 		try {
 	 const response1 = await fetch('api/save-changes/', {
@@ -39,12 +39,12 @@ export const updateIllustrations = async (changes) => {
         const result1 = await response1.json();
 
         // Second endpoint
-		const response2 = await fetch('http://localhost:3002/update-illustrations', {
+		const response2 = await fetch('http://localhost:3002/update-content', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-			body: JSON.stringify({illustrations: changes})
+			body: JSON.stringify({content: changes})
         });
 
         if (!response2.ok) {

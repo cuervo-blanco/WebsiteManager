@@ -52,11 +52,24 @@ async function saveChangesGallery(userId, data) {
 		try{
 
 			const actions = data.map( async (item) => {
+
+				if (item.status === 'delete') {
+					const deleteQuery = 'DELETE FROM contents WHERE user_id = $1 AND connection_id = $2'
+					const deleteValues = [userId, item.connection_id];
+					const deleteResult = await pool.query(deleteQuery, deleteValues);
+					return deleteResult;
+				} else if (item.status === 'new') {
+					const insertQuery  = 'INSERT INTO contents (src, alt, link, section_id, title, description, subtitle, user_id, connection_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)';
+					const insertValues = [item.src, item.alt, item.link, item.section_id, item.title, item.description, item.subtitle, userId, item.connection_id];
+					const insertResult = await pool.query(insertQuery, insertValues);
+					return insertResult;
+				} else {
 				
 	const query = 'UPDATE contents SET src = $1, alt = $2, link = $3, section_id = $4, title = $5, description = $6, subtitle = $7 WHERE user_id = $8 AND connection_id = $9' ;
 				const values = [item.src, item.alt, item.link, item.section_id, item.title, item.description, item.subtitle, userId, item.connection_id];
 				const result = await pool.query(query, values);
 				return result;
+				}
 			});
 
 			const results = await Promise.all(actions);

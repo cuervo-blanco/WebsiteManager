@@ -4,7 +4,7 @@ import styles from '../../styles/gallery.module.scss'
 import MediaViewer from '../../components/MediaViewer';
 import ImageSlot from  '../../components/ImageSlot';
 import SelectWindow from '../../components/SelectWindow'; 
-import { updateIllustrations } from '../../utils/fileUploadUtils';
+import { updateContent } from '../../utils/fileUploadUtils';
 import LinkEditor from '../../components/LinkEditor';
 import ToggleWindow from '../../components/ToggleWindow';
 import MediaInfoCard from '../../components/MediaInfoCard';
@@ -25,7 +25,7 @@ const Gallery = () => {
 	const [isEditMade, setEditMade] = useState<boolean>(false);
 	const [isLinkEditorVisible, showLinkEditor] = useState<boolean>(false);
 
-	
+		
 	useEffect(() => {
 	fetch('/api/get-gallery-content')
             .then(response => response.json())
@@ -38,12 +38,13 @@ const Gallery = () => {
 		const newId = uuidv4();
 		setLoadedContent(currentComponents => [
 			...currentComponents, 
-			{ section_id: 'p&s: illustrations', connection_id: newId, title: "", description: "", src: "", alt: "", link: "" , isNew: true}
+			{ section_id: 'p&s: illustrations', connection_id: newId, title: "", description: "", src: "", alt: "", link: "", status: "new" }
 		]);
 	};
 
-	const updateComponent = (updatedContent: Content[]) => {
-		setLoadedContent(updatedContent);
+	const updateComponent = (updatedData) => {
+	setLoadedContent(updatedData);
+		
 	};
 
 	const saveComponents = () => {
@@ -51,6 +52,27 @@ const Gallery = () => {
 		//Identify new components vs existintg ones
 		// Send to server for processing
 	}
+
+	const deleteComponent = (unique_id: string) => {
+	setLoadedContent(currentContent => {
+			const indexToDelete = currentContent.findIndex(component => component.connection_id === unique_id);
+				console.log('index to delete: ', indexToDelete);
+			if (indexToDelete === -1) {
+            return currentContent;
+        }
+		const newItem = {
+			connection_id: unique_id,
+			status: 'delete'
+		};
+		return  [
+				...currentContent.slice(0, indexToDelete),
+				newItem,
+				...currentContent.slice(indexToDelete + 1)
+				]
+		});
+		}
+	
+
 
 	const handleMediaSelected = (mediaSelected: [string, string]) => {
 			setSelectedMedia(mediaSelected);
@@ -91,7 +113,7 @@ const Gallery = () => {
 	const handleSaveChanges = async (changes: Content[]) => {
 		try {
 			// First endpoint
-			const result = await updateIllustrations(changes);
+			const result = await updateContent(changes);
 			setEditMade(false);
 			console.log('Upload result:', result);
 		} catch (error) {
@@ -111,6 +133,7 @@ const Gallery = () => {
 		showLinkEditor(false);
 	}
 
+	
 
 	return(
 	<div id={styles.galleryContainer}>
@@ -140,8 +163,8 @@ const Gallery = () => {
 
 		<button onClick={addComponent}> Add </button>
 
-		{loadedContent.filter(component => component.section_id !== 'illustrations' ).map(component => (
-		<MediaInfoCard key={component.connection_id} initialData={component} updateParent={updateComponent} setConnectionId={handleItemSelection} parentComponent={loadedContent}/>
+		{loadedContent.filter(component => component.section_id !== 'illustrations').map(component => (
+		<MediaInfoCard key={component.connection_id} initialData={component} setSelectedId={handleItemSelection} updateParent={updateComponent} deleteThis={deleteComponent} parentComponent={loadedContent} />
 		))}
 
 		</ToggleWindow>

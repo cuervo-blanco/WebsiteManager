@@ -3,9 +3,14 @@ import styles from '../styles/ImageSlot.module.scss';
 import { ImageSlotProps } from '../utils/types';
 
 const ImageSlot = ({src, alt, setSelectedId, connection_id}: ImageSlotProps) => {
+
+
+		const handleSendId = () => {
+			setSelectedId(connection_id)
+		}
 	
 	return(
-	<div id={styles.imageSlotContainer} onClick={() => setSelectedId(connection_id)}>
+	<div id={styles.imageSlotContainer} onClick={handleSendId}>
 			<img src={src} alt={alt}></img>
 		</div>
 	)
