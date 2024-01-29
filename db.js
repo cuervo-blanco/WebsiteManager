@@ -53,12 +53,12 @@ async function saveChangesGallery(userId, data) {
 
 			const actions = data.map( async (item) => {
 
-				if (item.status === 'delete') {
+				if (item.action === 'delete') {
 					const deleteQuery = 'DELETE FROM contents WHERE user_id = $1 AND connection_id = $2'
 					const deleteValues = [userId, item.connection_id];
 					const deleteResult = await pool.query(deleteQuery, deleteValues);
 					return deleteResult;
-				} else if (item.status === 'new') {
+				} else if (item.action === 'new') {
 					const insertQuery  = 'INSERT INTO contents (src, alt, link, section_id, title, description, subtitle, user_id, connection_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)';
 					const insertValues = [item.src, item.alt, item.link, item.section_id, item.title, item.description, item.subtitle, userId, item.connection_id];
 					const insertResult = await pool.query(insertQuery, insertValues);

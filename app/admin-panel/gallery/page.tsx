@@ -38,32 +38,38 @@ const Gallery = () => {
 		const newId = uuidv4();
 		setLoadedContent(currentComponents => [
 			...currentComponents, 
-			{ section_id: 'p&s: illustrations', connection_id: newId, title: "", description: "", src: "", alt: "", link: "", status: "new" }
+			{ section_id: 'p&s: illustrations', connection_id: newId, title: "", description: "", src: "", alt: "", link: "", action: "new" }
 		]);
 	};
 
 	const updateComponent = (updatedData) => {
 	setLoadedContent(updatedData);
-		
+	setEditMade(true);		
 	};
 
-	const saveComponents = () => {
-		//Prepare data for the server 
-		//Identify new components vs existintg ones
-		// Send to server for processing
-	}
 
 	const deleteComponent = (unique_id: string) => {
+	setEditMade(true);
 	setLoadedContent(currentContent => {
 			const indexToDelete = currentContent.findIndex(component => component.connection_id === unique_id);
 				console.log('index to delete: ', indexToDelete);
 			if (indexToDelete === -1) {
             return currentContent;
         }
-		const newItem = {
+
+		const newItem: Content = {
+			section_id: '',
 			connection_id: unique_id,
-			status: 'delete'
+			title: '',
+			description: '', 
+			src: '',
+			alt: '',
+			link: '',
+			action: 'delete'
 		};
+
+		console.log('new item created:', newItem);
+
 		return  [
 				...currentContent.slice(0, indexToDelete),
 				newItem,
@@ -71,13 +77,10 @@ const Gallery = () => {
 				]
 		});
 		}
-	
-
 
 	const handleMediaSelected = (mediaSelected: [string, string]) => {
 			setSelectedMedia(mediaSelected);
 		}
-
 
 	const handleItemSelection= (selectedId: string) => {
 		showEditOptions(true);
@@ -91,6 +94,7 @@ const Gallery = () => {
 	} 
 
 	const updateSelectedSlot = () => {
+	setEditMade(true);
 		//First we destructure the src and alt from the selectedImage
 		const [newSrc, newAlt] = selectedMedia || [ '', '' ]; 
 		//Now we find the index of the image slot with the matching connectionId
@@ -133,8 +137,6 @@ const Gallery = () => {
 		showLinkEditor(false);
 	}
 
-	
-
 	return(
 	<div id={styles.galleryContainer}>
 		<h1>Welcome to the gallery editor!</h1>
@@ -154,7 +156,6 @@ const Gallery = () => {
 					setSelectedId={handleItemSelection}
 					connection_id={slot.connection_id}
 					/>
-
 				))}
 		</ToggleWindow>
 		<ToggleWindow title="Products & Services" rows={3} behavior="additive" >
@@ -163,9 +164,20 @@ const Gallery = () => {
 
 		<button onClick={addComponent}> Add </button>
 
-		{loadedContent.filter(component => component.section_id !== 'illustrations').map(component => (
-		<MediaInfoCard key={component.connection_id} initialData={component} setSelectedId={handleItemSelection} updateParent={updateComponent} deleteThis={deleteComponent} parentComponent={loadedContent} />
-		))}
+		{loadedContent.filter(component => ( 
+			component.section_id === 'p&s: illustrations' || 
+			component.section_id === 'p&s: 2d animation & motion graphics' || 
+			component.section_id === 'p&s: character design'))
+			.map(component => (
+				<MediaInfoCard key={component.connection_id} 
+				initialData={component} 
+				setSelectedId={handleItemSelection} 
+				updateParent={updateComponent} 
+				deleteThis={deleteComponent} 
+				parentComponent={loadedContent}
+				/>
+			))
+		}
 
 		</ToggleWindow>
 		{isEditMade && <button onClick={() => handleSaveChanges(loadedContent)}>Save Changes</button>}

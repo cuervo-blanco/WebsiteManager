@@ -18,7 +18,7 @@ interface MediaInfoProps {
 
 const MediaInfoCard = ({initialData, updateParent, setSelectedId, parentComponent, deleteThis }: MediaInfoProps) => {
 
-	const [selectedCategory, setSelectedCategory] = useState('');
+	const [selectedCategory, setSelectedCategory] = useState(initialData.section_id);
 	const [backgroundColor, setBackgroundColor]  = useState<string>('white')
 
 
@@ -81,7 +81,7 @@ const MediaInfoCard = ({initialData, updateParent, setSelectedId, parentComponen
 			<ImageSlot src={initialData.src} alt={initialData.alt} setSelectedId={setSelectedId} connection_id={initialData.connection_id} link={initialData.link}/>
 		<SimpleTextEditor component={initialData} connection_id={initialData.connection_id} size={2} onItemsUpdate={updateComponent}/>
 		<button onClick={() => deleteThis(initialData.connection_id)}>Delete</button>
-		</div>
+			</div>
 	)
 }
 
