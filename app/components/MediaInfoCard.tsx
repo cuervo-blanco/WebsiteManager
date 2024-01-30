@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import ImageSlot from './ImageSlot';
 import SimpleTextEditor from './SimpleTextEditor';
 import styles from '../styles/MediaInfoCard.module.scss';
@@ -11,22 +11,30 @@ interface MediaInfoProps {
 	updateParent: Function;
 	setSelectedId: (selectedId: string) => void;
 	parentComponent: Content[];
-	deleteThis: (connection_id: string, section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design' | 'clients' | '') => void;
+	deleteThis: (connection_id: string, section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design' | 'clients' | 'press' | '') => void;
+	options: 'p&s' | 'press';
 	}
 
 
 
-const MediaInfoCard = ({initialData, updateParent, setSelectedId, parentComponent, deleteThis }: MediaInfoProps) => {
-
+const MediaInfoCard = ({initialData, updateParent, setSelectedId, parentComponent, deleteThis, options }: MediaInfoProps) => {
+	
 	const [selectedCategory, setSelectedCategory] = useState(initialData.section_id);
 	const [backgroundColor, setBackgroundColor]  = useState<string>('white')
-
-
-	const categories = [
-        { label: 'Illustrations', value: 'p&s: illustrations' },
-        { label: '2D Animation & Motion Graphics', value: 'p&s: 2d animation & motion graphics' },
-        { label: 'Character Design', value: 'p&s: character design' }
-    ];
+	
+	const categories = useMemo(() => {
+	if (options === 'p&s'){
+		return [
+			{ label: 'Illustrations', value: 'p&s: illustrations' },
+			{ label: '2D Animation & Motion Graphics', value: 'p&s: 2d animation & motion graphics' },
+			{ label: 'Character Design', value: 'p&s: character design' }
+		];
+	} else if (options === 'press') {
+			return [
+				{ label: 'Press', value: 'press'}
+				];
+			}
+	}, [options]);
 
 	const handleSelection = (value) => {
 		if (value ===  'p&s: illustrations') {
@@ -37,6 +45,8 @@ const MediaInfoCard = ({initialData, updateParent, setSelectedId, parentComponen
 			setBackgroundColor('blue');
 		} else if (value ===  'p&s: character design') {
 			setBackgroundColor('yellow');
+		} else if (value === 'press') {
+			setBackgroundColor('orange');
 		}
         setSelectedCategory(value);
 		processSelection(value);
@@ -88,9 +98,9 @@ const MediaInfoCard = ({initialData, updateParent, setSelectedId, parentComponen
 			initialData={initialData}
 			connection_id={initialData.connection_id}
 			onItemsUpdate={updateComponent} 
-			parts='TD' 
-			type='dependent'/>
-
+			parts="TD" 
+			type='dependent'
+			deleteThis={undefined}/>
 			<button onClick={() => deleteThis(initialData.connection_id, initialData.section_id)}>Delete</button>
 			</div>
 	)

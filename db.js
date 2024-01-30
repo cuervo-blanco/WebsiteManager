@@ -37,7 +37,7 @@ async function getUserPages(userId) {
 
 async function getGalleryContent(userId) {
 		try{
-			const query = 'SELECT connection_id, src, alt, link, section_id, title, description, subtitle FROM contents WHERE user_id = $1 ORDER BY connection_id';
+			const query = 'SELECT connection_id, src, alt, link, section_id, title, description, subtitle FROM contents WHERE user_id = $1 ORDER BY	connection_id';
 			const value = [userId];
 			const result = await pool.query(query, value);
 			return result.rows;

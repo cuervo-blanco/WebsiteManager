@@ -25,6 +25,7 @@ const Gallery = () => {
 	const [isMediaGalleryVisible, showMediaGallery] = useState<boolean>(false);
 	const [isEditMade, setEditMade] = useState<boolean>(false);
 	const [isLinkEditorVisible, showLinkEditor] = useState<boolean>(false);
+	const [savedContent, setSavedContent] = useState<Content[]>([]);
 
 		
 	useEffect(() => {
@@ -33,15 +34,21 @@ const Gallery = () => {
             .then(data => {
                 setLoadedContent(data);
             });
-    }, []);
+    }, [savedContent]);
 
-	const addComponent = (kind: 'Media Info Card' | 'Simple Text Editor') => {
+	const addComponent = (kind: 'Media Info Card' | 'Simple Text Editor' | 'Media Info Card: Press') => {
 		const newId = uuidv4();
 		if (kind === 'Media Info Card') {
 			setLoadedContent(currentComponents => [
 				...currentComponents, 
 				{ section_id: 'p&s: illustrations', connection_id: newId, title: "", description: "", src: "", alt: "", link: "", action: "new" }
 			]);
+		} else if (kind === 'Media Info Card: Press') {
+			setLoadedContent(currentComponents => [
+				...currentComponents,
+				{ section_id: 'press', connection_id: newId, title: "", description: "", src: "", alt: "", link: "", action: "new" }
+			]);
+
 		} else if (kind === 'Simple Text Editor'){
 			setLoadedContent(currentComponents => [
 				...currentComponents,
@@ -127,6 +134,7 @@ const Gallery = () => {
 			// First endpoint
 			const result = await updateContent(changes);
 			setEditMade(false);
+			setSavedContent(changes);
 			console.log('Upload result:', result);
 		} catch (error) {
 			console.error('Error during file upload:', error);
@@ -184,6 +192,7 @@ const Gallery = () => {
 				updateParent={updateComponent} 
 				deleteThis={deleteComponent} 
 				parentComponent={loadedContent}
+				options="p&s"
 				/>
 			))
 		}
@@ -198,7 +207,7 @@ const Gallery = () => {
 				component.section_id === 'clients' &&
 				component.action !== 'delete'))
 				.map(component => (
-				<SimpleTextEditor key={component.connection_id}
+			<SimpleTextEditor key={component.connection_id}
 				parentComponent={loadedContent}
 				initialData={component}
 				connection_id={component.connection_id}
@@ -211,6 +220,29 @@ const Gallery = () => {
 
 		</ToggleWindow>
 		{isEditMade && <button onClick={() => handleSaveChanges(loadedContent)}>Save Changes</button>}
+		
+		<ToggleWindow title="Press" rows={3} behavior="additive">
+
+		{loadedContent.filter(component => ( 
+			component.section_id === 'press' && 
+			component.action !== 'delete'))
+			.map(component => (
+				<MediaInfoCard key={component.connection_id} 
+				initialData={component} 
+				setSelectedId={handleItemSelection} 
+				updateParent={updateComponent} 
+				deleteThis={deleteComponent} 
+				parentComponent={loadedContent}
+				options="press"
+				/>
+			))
+		}	
+
+
+		<button onClick={() => addComponent('Media Info Card: Press')}> Add </button>
+
+		</ToggleWindow>
+
 	</div>
 	)
 }

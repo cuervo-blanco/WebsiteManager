@@ -10,7 +10,7 @@ interface SimpleTextEditorProps {
 	onItemsUpdate: Function;
 	parts: 'all' | 'TD' | 'DS'; 
 	type: 'solo' | 'dependent';
-	deleteThis:  (connection_id: string, section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design' | 'clients' | '') => void;
+	deleteThis?:  (connection_id: string, section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design' | 'clients' | '' | 'press') => void;
 }
 
 const SimpleTextEditor = ({parentComponent, initialData, connection_id, onItemsUpdate,  parts, type, deleteThis}: SimpleTextEditorProps) => {
