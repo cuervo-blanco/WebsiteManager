@@ -8,6 +8,7 @@ import { updateContent } from '../../utils/fileUploadUtils';
 import LinkEditor from '../../components/LinkEditor';
 import ToggleWindow from '../../components/ToggleWindow';
 import MediaInfoCard from '../../components/MediaInfoCard';
+import SimpleTextEditor from '../../components/SimpleTextEditor';
 import { Content } from '../../utils/types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -34,31 +35,38 @@ const Gallery = () => {
             });
     }, []);
 
-	const addComponent = () => {
+	const addComponent = (kind: 'Media Info Card' | 'Simple Text Editor') => {
 		const newId = uuidv4();
-		setLoadedContent(currentComponents => [
-			...currentComponents, 
-			{ section_id: 'p&s: illustrations', connection_id: newId, title: "", description: "", src: "", alt: "", link: "", action: "new" }
-		]);
+		if (kind === 'Media Info Card') {
+			setLoadedContent(currentComponents => [
+				...currentComponents, 
+				{ section_id: 'p&s: illustrations', connection_id: newId, title: "", description: "", src: "", alt: "", link: "", action: "new" }
+			]);
+		} else if (kind === 'Simple Text Editor'){
+			setLoadedContent(currentComponents => [
+				...currentComponents,
+				{section_id: 'clients', connection_id: newId, title: '', description: '', src: '', alt: '', link: '', action: 'new'}
+			]);
+		}
 	};
 
-	const updateComponent = (updatedData) => {
-	setLoadedContent(updatedData);
-	setEditMade(true);		
-	};
+	const updateComponent = (updatedData: Content[]) => {
+			setLoadedContent(updatedData);
+			setEditMade(true);		
+		};
 
 
-	const deleteComponent = (unique_id: string) => {
+	const deleteComponent = (unique_id: string, section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design' | 'clients' | '') => {
 	setEditMade(true);
 	setLoadedContent(currentContent => {
 			const indexToDelete = currentContent.findIndex(component => component.connection_id === unique_id);
-				console.log('index to delete: ', indexToDelete);
+			console.log('index to delete: ', indexToDelete);
 			if (indexToDelete === -1) {
             return currentContent;
         }
 
 		const newItem: Content = {
-			section_id: '',
+			section_id: section_id,
 			connection_id: unique_id,
 			title: '',
 			description: '', 
@@ -162,12 +170,13 @@ const Gallery = () => {
 
 		{/*Map through the loadedContent to generate MediaInfoCard components */} 
 
-		<button onClick={addComponent}> Add </button>
+		<button onClick={() => addComponent('Media Info Card')}> Add </button>
 
 		{loadedContent.filter(component => ( 
 			component.section_id === 'p&s: illustrations' || 
 			component.section_id === 'p&s: 2d animation & motion graphics' || 
-			component.section_id === 'p&s: character design'))
+			component.section_id === 'p&s: character design' &&
+			component.action !== 'delete'))
 			.map(component => (
 				<MediaInfoCard key={component.connection_id} 
 				initialData={component} 
@@ -178,6 +187,27 @@ const Gallery = () => {
 				/>
 			))
 		}
+
+		</ToggleWindow>
+
+
+		<ToggleWindow title="Clients" rows={3} behavior="additive">
+		
+		<button onClick={() => addComponent('Simple Text Editor')}> Add </button>
+			{loadedContent.filter (component => (
+				component.section_id === 'clients' &&
+				component.action !== 'delete'))
+				.map(component => (
+				<SimpleTextEditor key={component.connection_id}
+				parentComponent={loadedContent}
+				initialData={component}
+				connection_id={component.connection_id}
+				onItemsUpdate={updateComponent} 
+				parts='DS'
+				type='solo'
+				deleteThis={deleteComponent}
+				/> )) 
+			}
 
 		</ToggleWindow>
 		{isEditMade && <button onClick={() => handleSaveChanges(loadedContent)}>Save Changes</button>}

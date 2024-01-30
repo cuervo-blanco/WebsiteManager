@@ -11,7 +11,7 @@ interface MediaInfoProps {
 	updateParent: Function;
 	setSelectedId: (selectedId: string) => void;
 	parentComponent: Content[];
-	deleteThis: (connection_id: string) => void;
+	deleteThis: (connection_id: string, section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design' | 'clients' | '') => void;
 	}
 
 
@@ -78,9 +78,20 @@ const MediaInfoCard = ({initialData, updateParent, setSelectedId, parentComponen
 		</div>
 
 		{/*Use this input to change section_id limit the sections to the sections where the media info card is placed and also change the color based on the section.*/}
-			<ImageSlot src={initialData.src} alt={initialData.alt} setSelectedId={setSelectedId} connection_id={initialData.connection_id} link={initialData.link}/>
-		<SimpleTextEditor component={initialData} connection_id={initialData.connection_id} size={2} onItemsUpdate={updateComponent}/>
-		<button onClick={() => deleteThis(initialData.connection_id)}>Delete</button>
+			<ImageSlot src={initialData.src}
+			alt={initialData.alt}
+			setSelectedId={setSelectedId}
+			connection_id={initialData.connection_id} 
+			link={initialData.link}/>
+
+			<SimpleTextEditor parentComponent={parentComponent}
+			initialData={initialData}
+			connection_id={initialData.connection_id}
+			onItemsUpdate={updateComponent} 
+			parts='TD' 
+			type='dependent'/>
+
+			<button onClick={() => deleteThis(initialData.connection_id, initialData.section_id)}>Delete</button>
 			</div>
 	)
 }

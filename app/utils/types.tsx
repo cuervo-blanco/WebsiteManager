@@ -14,7 +14,7 @@ export interface Content extends BasicContent {
   body?: string |  ""  | undefined;
   published_date?: Date | undefined;
   subtitle?: string;
-section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design' | '';
+section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design' | 'clients' | '';
   description?: string;
   action?: 'delete' | 'new';
 }
