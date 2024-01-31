@@ -8,7 +8,7 @@ const ToggleWindow = ({children, title, rows, behavior }: WindowProps) => {
 	return(
 		<div id={styles.toggleWindowContainer}>
 			<div id={styles.windowTitle}>
-				<h2>{title}</h2>
+				<h1>{title}</h1>
 			</div>
 			<div id={styles.windowContent}>
 				{children}

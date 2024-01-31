@@ -14,9 +14,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 
-
-
-
 const Gallery = () => {
 	const [selectedMedia, setSelectedMedia] = useState<[string, string] | [] >([]);
 	const [selectedItemId, setSelectedItemId] = useState<string>("");
@@ -36,7 +33,7 @@ const Gallery = () => {
             });
     }, [savedContent]);
 
-	const addComponent = (kind: 'Media Info Card' | 'Simple Text Editor' | 'Media Info Card: Press') => {
+	const addComponent = (kind: 'Media Info Card' | 'Simple Text Editor' | 'Media Info Card: Press'| 'Poster') => {
 		const newId = uuidv4();
 		if (kind === 'Media Info Card') {
 			setLoadedContent(currentComponents => [
@@ -54,6 +51,12 @@ const Gallery = () => {
 				...currentComponents,
 				{section_id: 'clients', connection_id: newId, title: '', description: '', src: '', alt: '', link: '', action: 'new'}
 			]);
+		} else if (kind === 'Poster') {
+			setLoadedContent(currentComponents => [
+				...currentComponents,
+				{ section_id: 'p&s: posters', connection_id: newId, title: '', description: '', src: '', alt: '', link: '', action: 'new'}
+			]);	
+		
 		}
 	};
 
@@ -63,7 +66,7 @@ const Gallery = () => {
 		};
 
 
-	const deleteComponent = (unique_id: string, section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design' | 'clients' | '') => {
+	const deleteComponent = (unique_id: string, section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design' | 'clients' | '' ) => {
 	setEditMade(true);
 	setLoadedContent(currentContent => {
 			const indexToDelete = currentContent.findIndex(component => component.connection_id === unique_id);
@@ -153,12 +156,16 @@ const Gallery = () => {
 		showLinkEditor(false);
 	}
 
-	return(
+	return (
 	<div id={styles.galleryContainer}>
+
 		<h1>Welcome to the gallery editor!</h1>
+
+
 		{ isMediaGalleryVisible && <MediaViewer sendSelect={handleMediaSelected} modalWindow={true} setImageSlot={updateSelectedSlot}/> } 
 		{ isLinkEditorVisible && <LinkEditor items={loadedContent} connection_id={selectedItemId} onItemsUpdate={handleLinkUpdate}/>}
 		{ isEditOptionsVisible && <SelectWindow select={toggleMediaGalleryVisibility} editLink={handleEditLink}/>}
+		{ isEditMade && <button onClick={() => handleSaveChanges(loadedContent)}>Save Changes</button>}
 
 		<ToggleWindow title="Illustrations" rows={3} behavior="fixed"> 
 			{loadedContent
@@ -171,18 +178,98 @@ const Gallery = () => {
 					link={slot.link}
 					setSelectedId={handleItemSelection}
 					connection_id={slot.connection_id}
+					type="illustration"
 					/>
 				))}
+
+				
 		</ToggleWindow>
 		<ToggleWindow title="Products & Services" rows={3} behavior="additive" >
+		
 
 		{/*Map through the loadedContent to generate MediaInfoCard components */} 
 
+		<div id={styles.productsAndServices}>
+
 		<button onClick={() => addComponent('Media Info Card')}> Add </button>
 
+
+		<h2>Illustrations</h2>
+
+
+		<div id={styles.illustrationSection} className={styles.productsSection}>
+
 		{loadedContent.filter(component => ( 
-			component.section_id === 'p&s: illustrations' || 
-			component.section_id === 'p&s: 2d animation & motion graphics' || 
+			component.section_id === 'p&s: illustrations' && 
+			component.action !== 'delete'))
+			.map(component => (
+				<MediaInfoCard key={component.connection_id} 
+				initialData={component} 
+				setSelectedId={handleItemSelection} 
+				updateParent={updateComponent} 
+				deleteThis={deleteComponent} 
+				parentComponent={loadedContent}
+				options="p&s"
+				/>
+			))
+		}
+
+		</div>
+
+	
+			<h2>Posters</h2>
+
+		<div id={styles.posterSection} className={styles.productsSection}>
+
+
+		<button onClick={() => addComponent('Poster')}> Add </button>
+
+				{loadedContent
+					.filter(slot => slot.section_id === 'p&s: posters' &&
+					slot.action !== 'delete')
+					.map(slot  => ( 
+						<ImageSlot
+							key={slot.connection_id}
+							src={slot.src}
+							alt={slot.alt}
+							link={slot.link}
+							setSelectedId={handleItemSelection}
+							connection_id={slot.connection_id}
+							type="poster"
+							section_id={slot.section_id}
+							deleteThis={deleteComponent}
+							/>
+						))}
+		</div>
+
+
+
+			<h2>2d Animation and Motion Graphics</h2>
+
+		<div id={styles['2dAnimationSection']} className={styles.productsSection}>
+
+			{loadedContent.filter(component => ( 
+			component.section_id === 'p&s: 2d animation & motion graphics' && 
+			component.action !== 'delete'))
+			.map(component => (
+				<MediaInfoCard key={component.connection_id} 
+				initialData={component} 
+				setSelectedId={handleItemSelection} 
+				updateParent={updateComponent} 
+				deleteThis={deleteComponent} 
+				parentComponent={loadedContent}
+				options="p&s"
+				/>
+			))
+		}
+
+		</div>
+
+
+			<h2>Character Design</h2>
+				<div id={styles.characterDesignSection} className={styles.productsSection}>
+
+			{loadedContent.filter(component => ( 
 			component.section_id === 'p&s: character design' &&
 			component.action !== 'delete'))
 			.map(component => (
@@ -197,7 +284,11 @@ const Gallery = () => {
 			))
 		}
 
+		</div>
+		</div>
 		</ToggleWindow>
+			
+
 
 
 		<ToggleWindow title="Clients" rows={3} behavior="additive">
@@ -219,7 +310,6 @@ const Gallery = () => {
 			}
 
 		</ToggleWindow>
-		{isEditMade && <button onClick={() => handleSaveChanges(loadedContent)}>Save Changes</button>}
 		
 		<ToggleWindow title="Press" rows={3} behavior="additive">
 
@@ -243,7 +333,7 @@ const Gallery = () => {
 
 		</ToggleWindow>
 
-	</div>
+		</div>
 	)
 }
 

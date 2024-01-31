@@ -28,7 +28,13 @@ export interface WindowProps {
 
 export interface ImageSlotProps extends BasicContent {
   setSelectedId: SetStateFunction<string>; // Using a more specific function type
-}
+  type: 'poster' | 'illustration';
+  deleteThis?: (connection_id: string, section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design' | 'clients' | 'press' | '') => void;
+	options: 'p&s' | 'press';
+	section_id: 'illustrations' | 'p&s: illustrations' | 'p&s: posters' | 'p&s: 2d animation & motion graphics' | 'p&s: character design' | 'clients' | 'press' | '';
+
+	}
+
 
 export interface LinkEditorProps {
   connection_id: string | undefined;
