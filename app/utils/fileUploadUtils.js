@@ -63,3 +63,51 @@ export const updateContent = async (changes) => {
 	}
 
 }
+
+export const saveBlogPost = async (blogPost) => {
+	try {
+		const response = await fetch('http://localhost:3002/api/save-blog-post', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ post: blogPost })
+		});
+
+		if (!response.ok){
+			throw new Error(`Error saving blog post to website server: ${response.status}`);
+		}
+
+		const result = await response.json();
+
+		return result;
+
+	} catch (error) {
+		console.error('Error saving the blog post', error);
+		throw error;
+	}
+}
+
+export const publishBlogPost = async (post_id) => {
+		try { 
+		const response = await fetch('http://localhost:3002/api/publish-post', {
+			method: 'POST',
+			headers: {
+				'Content-Type':  'application/json',
+			},
+			body: JSON.stringify({ postId: post_id})
+		});
+
+			if (!response.ok){
+				throw new Error(`Error publishing blog post: ${response.status}`);
+			}
+
+			const result = await response.json();
+
+			return result;
+	} catch (error) {
+		console.error('Error publishing blog post', error);
+		throw error;
+		}
+}
+
