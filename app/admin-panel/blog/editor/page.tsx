@@ -6,6 +6,7 @@ import tinymce from 'tinymce';
 import { useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { saveBlogPost } from '../../../utils/fileUploadUtils'
+import { produce } from "immer";
 
 type BlogPost = {
 post_id: string,
@@ -27,19 +28,25 @@ seo_metadata: {}
 const BlogEditor = () => {
 		
 	// States: used to store the values the user will be changing
-	const [postTitle, setPostTitle] = useState<string>('');
-	const [postBody, setPostBody] = useState<string>('');
-	const [postDescription, setPostDescription] = useState<string>('');
-	const [postTags, setPostTags] = useState<string>('');
 	const [editorInitialized, setEditorInitialized] = useState(false);
 	const [editMade, setEditMade] = useState(false);
 	const [changesSaved, setChangesSaved] = useState(false);
-	const [postStatus, setPostStatus] = useState<string>('');
-	const [postAuthor, setPostAuthor] = useState<string>('' );
-	const [postId, setPostId] = useState<string>('');
-	const [postDate, setPostDate] = useState<string | ''>('');
-	const [postMetaData, setPostMetaData] = useState<{} | ''>('');
-	const [featuredImage, setFeaturedImage] = useState<string>('');
+	const [postState, setPostState] = useState<BlogPost>({
+		post_id: '',
+		draft_version: {
+			title: '',
+			description: '',
+			body: '',
+			slug: '',
+			tags: '',
+			featured_image: ''
+		},
+		published_version: '',
+		published_date: '',
+		author: '',
+		status: '',
+		seo_metadata: {}
+	})
 
 	// Getting the url query to identify if the post is new or if it should be fetched.
 	const searchParams = useSearchParams();
@@ -65,15 +72,20 @@ const BlogEditor = () => {
 				const response = await fetch(`/api/blog/editor/${post}`)
 				const postData = await response.json();
 			
-					setPostBody(postData.draft_version.body);
-					setPostTitle(postData.draft_version.title);
-					setPostDescription(postData.draft_version.description);
-					setPostTags(postData.draft_version.tags);
-					setPostAuthor(postData.author);
-					setPostStatus('edit');			
-					setPostId(postData.post_id);
-					setPostDate(postData.published_date);
-					setPostMetaData(postData.seo_metadata);
+					setPostState(currentData => produce(currentData, draft => {
+						draft.post_id = postData.post_id;
+						draft.draft_version.title = postData.draft_version.title;
+						draft.draft_version.body = postData.draft_version.body;
+						draft.draft_version.description = postData.draft_version.description;
+						draft.draft_version.tags = postData.draft_version.tags;
+						draft.draft_version.featured_image = postData.draft_version.featured_image;
+						draft.draft_version.slug = postData.draft_version.slug;
+						draft.author = postData.slug;
+						draft.published_date = postData.published_date;
+						draft.status = postData.author;
+						draft.published_version = postData.published_version;
+						draft.seo_metadata = postData.seo_metadata;
+					}));
 
 					return postData;
 			} catch (error) {
@@ -86,9 +98,12 @@ const BlogEditor = () => {
 	useEffect(() => {
 		if (post === 'new'){
 			// Initialize post states	
-			setPostStatus('draft');
 			const newPostId = uuidv4();
-			setPostId(newPostId);
+
+			setPostState(currentData=> produce(currentData, draft => {
+				draft.post_id = newPostId;
+				draft.status = 'draft'
+			}))
 
 		} else {
 			loadPostData();	
@@ -104,17 +119,17 @@ const BlogEditor = () => {
 		}
 		
 		currentPostState.current = {
-			post_id: postId,
+			post_id: postState.post_id,
 			draft_version: {
-				title: postTitle,
-				description: postDescription,
-				body: postBody,
-				tags: postTags,
-				featured_image: featuredImage
+				title: postState.draft_version.title,
+				description: postState.draft_version.description,
+				body: postState.draft_version.body,
+				tags: postState.draft_version.tags,
+				featured_image: postState.draft_version.featured_image
 			},
-			author: postAuthor,
-			seo_metadata: postMetaData,
-			status: postStatus
+			author: postState.author,
+			seo_metadata: postState.seo_metadata,
+			status: postState.status
 		}
 
 		window.addEventListener('beforeunload', saveStateToSessionStorage);
@@ -127,41 +142,52 @@ const BlogEditor = () => {
 			saveStateToSessionStorage();
 		}
 
-		}, [postId, postTitle, postDescription, postBody, postDate, postTags, postStatus, postAuthor, postMetaData]);
+		}, [postState]);
 
-
+			
 	// Handle changes en save to states
-	const handleEditorChange = (content) => {
-		setPostBody(content);
-		setEditMade(true);
-	};
-	const handleTitleChange = (event) => {
-		setPostTitle(event.target.value);
-	};
-	const handleDescriptionChange = (event) => {
-		setPostDescription(event.target.value);
-	}	
-	const handleChangeAuthor = (event) => {
-		setPostAuthor(event.target.value);		
-	}
 
-	const handleSaveChanges = async () => {
+	const handleChange = (event, stateToChange) => {
+		setEditMade(true);
+		switch (stateToChange) {
+			case 'title':
+				setPostState(currentData => produce(currentData, draft => { draft.draft_version.title = event.target.value}));
+				break;
+			case 'description':
+				setPostState(currentData => produce(currentData, draft => { draft.draft_version.description = event.target.value}));
+				break;
+			case 'body':
+				setPostState(currentData => produce(currentData, draft => { draft.draft_version.body = event.target.value}));
+				break;
+			case 'author':
+				setPostState(currentData => produce(currentData, draft => { draft.author = event.target.value}));
+				break;
+			case 'tags':
+				setPostState(currentData => produce(currentData, draft => { draft.draft_version.tags = event.target.value}));
+				break;
+			default:
+				console.log('No state property was chosen');
+				break;
+		}
+	}
+const handleSaveChanges = async () => {
 		try {
-			const postSlug = titleToSlug(postTitle);
+			const postSlug = titleToSlug(postState.draft_version.title);
 			const postToSave: BlogPost = {
-				post_id: postId,
+				post_id: postState.post_id,
 				draft_version: {
-					title: postTitle,
-					description: postDescription,
-					body: postBody,
+					title: postState.draft_version.title,
+					description: postState.draft_version.description,
+					body: postState.draft_version.body,
 					slug: postSlug,
-					tags: postTags,
-					featured_image: featuredImage
+					tags: postState.draft_version.tags,
+					featured_image: postState.draft_version.featured_image
 				},
-				published_date: postDate,
-				author: postAuthor, 
-				status: postStatus || 'undefined',
-				seo_metadata: postMetaData
+				published_version: postState.published_version,
+				published_date: postState.published_date,
+				author: postState.author, 
+				status: postState.status,
+				seo_metadata: postState.seo_metadata
 			}
 
 			const result = await saveBlogPost(postToSave);
@@ -183,15 +209,15 @@ const BlogEditor = () => {
 
 	<input 
 		type="text"
-		value={postTitle}
-		onChange={handleTitleChange}
+		value={postState.draft_version.title}
+		onChange={e => handleChange(e, 'title')}
 		placeholder="Post Title"
 		/>
 
 	<input 
 		type="text"
-		value={postDescription}
-		onChange={handleDescriptionChange}
+		value={postState.draft_version.description}
+		onChange={e => handleChange(e, 'description')}
 		placeholder="Post Description"
 		/>
 
@@ -208,15 +234,15 @@ const BlogEditor = () => {
         ],
         ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant")),
       }}
-		initialValue={editorInitialized ? undefined : postBody}
+		initialValue={editorInitialized ? undefined : postState.draft_version.body}
 		onInit={() => {
 			// Set the flag to true once the editor is initialized
 			setEditorInitialized(true);
 		}}
-		onEditorChange={handleEditorChange}
+		onEditorChange={e => handleChange(e, 'body')}
 		/>
 		<label>Author: </label>
-		<select	id="author" onChange={handleChangeAuthor}>
+		<select	id="author" onChange={e => handleChange(e, 'author')}>
 			<option value="lucia-castro">Lucía Castro</option>
 		</select>
 
