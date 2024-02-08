@@ -1,9 +1,8 @@
 'use client';
-import React, { useEffect, useState, useRef} from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from '../../../styles/editor.module.scss';
 import { Editor } from '@tinymce/tinymce-react';
-import tinymce from 'tinymce';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { saveBlogPost } from '../../../utils/fileUploadUtils'
 import { produce } from "immer";
@@ -29,7 +28,11 @@ type DraftVersionKeys = 'title' | 'description' | 'tags' | 'body' | 'author';
 
 
 const BlogEditor = () => {
-		
+
+    const searchParams = useSearchParams();
+    const post = searchParams.get('post');
+    const router = useRouter();
+
 	// States: used to store the values the user will be changing
 	const [editorInitialized, setEditorInitialized] = useState(false);
 	const [editMade, setEditMade] = useState(false);
@@ -50,13 +53,17 @@ const BlogEditor = () => {
 		status: '',
 		seo_metadata: {}
 	})
+    const [isClient, setIsClient] = useState(false);
 
+    const getSessionStorageKey = (id: string) => `blogPostState_${id}`;
+    const loadStateFromSessionStorage = (id: string) => {
+        const savedState = sessionStorage.getItem(getSessionStorageKey(id));
+        return savedState ? JSON.parse(savedState) : null;
+    }
+    const saveStateToSessionStorage = (id: string, state: BlogPost) => {
+        sessionStorage.setItem(getSessionStorageKey(id), JSON.stringify(state));
+    };
 
-	// Getting the url query to identify if the post is new or if it should be fetched.
-	const searchParams = useSearchParams();
-	const post = searchParams.get('post');
-
-	const currentPostState = useRef({});
 
 	// Change a title to a slug
 	const titleToSlug = (title: string | undefined) => {
@@ -70,12 +77,12 @@ const BlogEditor = () => {
 		return '';
 	}
 
-	// Load Post data function. 
+	// Load Post data function.
 		const loadPostData = async () => {
 			try {
 				const response = await fetch(`/api/blog/editor/${post}`)
 				const postData = await response.json();
-			
+
 					setPostState(currentData => produce(currentData, draft => {
 						draft.post_id = postData.post_id;
 						draft.draft_version.title = postData.draft_version.title;
@@ -98,78 +105,57 @@ const BlogEditor = () => {
 		}
 
 	// useEffect for loading data annd initializing states
+        useEffect(() => {
+                setIsClient(true);
+                }, []);
 
 	useEffect(() => {
-		const loadStateFromSessionStorage = () => {
-			const savedState = sessionStorage.getItem('blogPostState');
-			if (savedState) {
-				return JSON.parse(savedState);
-			}
-			return null;
-		};
-		const savedState = loadStateFromSessionStorage();
-		if (savedState){
-			setPostState(currentData => produce(currentData, draft => {
-				draft.post_id = savedState.post_id;
-				draft.draft_version.title = savedState.draft_version.title;
-				draft.draft_version.body = savedState.draft_version.body;	
-				draft.draft_version.description = savedState.draft_version.description;
-				draft.draft_version.tags = savedState.draft_version.tags;
-				draft.draft_version.featured_image = savedState.draft_version.featured_image;
-				draft.draft_version.slug = savedState.draft_version.slug;
-				draft.author = savedState.slug;
-				draft.published_date = savedState.published_date;
-				draft.status = savedState.author;
-				draft.published_version = savedState.published_version;
-				draft.seo_metadata = savedState.seo_metadata;
-			}));
-		} else if (post === 'new'){
-			// Initialize post states	
-			const newPostId = uuidv4();
-			setPostState(currentData=> produce(currentData, draft => {
-				draft.post_id = newPostId;
-				draft.status = 'draft'
-			}))
-		} else {
-			loadPostData();	
-		}
-	}, [post]);
-	
+            console.log('initial load')
+        if (typeof post === 'string' && post !== 'new') {
+            const savedState = loadStateFromSessionStorage(post);
+            console.log(savedState);
+            if (savedState){
+                    setPostState(currentData => produce(currentData, draft => {
+                                draft.post_id = savedState.post_id;
+                                draft.draft_version.title = savedState.draft_version.title;
+                                draft.draft_version.body = savedState.draft_version.body;
+                                draft.draft_version.description = savedState.draft_version.description;
+                                draft.draft_version.tags = savedState.draft_version.tags;
+                                draft.draft_version.featured_image = savedState.draft_version.featured_image;
+                                draft.draft_version.slug = savedState.draft_version.slug;
+                                draft.author = savedState.slug;
+                                draft.published_date = savedState.published_date;
+                                draft.status = savedState.author;
+                                draft.published_version = savedState.published_version;
+                                draft.seo_metadata = savedState.seo_metadata;
+                                }));
+                } else {
+                    // Fetch post data or handle as missing post
+                    console.log('Loading from server');
+			       loadPostData();
+                    }
+            } else if (post === 'new'){
+                const newPostId = uuidv4();
+                setPostState(currentState => produce(currentState, draftState => {
+                            draftState.post_id = newPostId;
+                            draftState.status = 'draft';
+                            }));
+                if (saveStateToSessionStorage){
+                router.replace(`/admin-panel/blog/editor?post=${newPostId}`, undefined,{ shallow: true }  )
+                }
+                }
+	}, [post, router]);
+
 	// useEffect for initializing Session Storage and handling the unmount and recall of the post data
 
-	useEffect(() => {
-		// Create a session storage key and store the current states	
-		currentPostState.current = {
-			post_id: postState.post_id,
-			draft_version: {
-				title: postState.draft_version.title,
-				description: postState.draft_version.description,
-				body: postState.draft_version.body,
-				tags: postState.draft_version.tags,
-				featured_image: postState.draft_version.featured_image
-			},
-			author: postState.author,
-			seo_metadata: postState.seo_metadata,
-			status: postState.status
-		}
-	}, [postState]);
-
-	useEffect(() => {
-		const saveStateToSessionStorage = () => {
-			sessionStorage.setItem('blogPostState', JSON.stringify(currentPostState.current));
-		}
-		window.addEventListener('beforeunload', saveStateToSessionStorage);
-		setEditorInitialized(false);
-		return () => {
-			// Clean up the event listener and save the state to the Storage
-			window.removeEventListener('beforeunload', saveStateToSessionStorage);
-			saveStateToSessionStorage();
-		}
-		}, []);
+    useEffect(() => {
+        if (postState.post_id){
+            saveStateToSessionStorage(postState.post_id, postState);
+            }
+        }, [postState])
 
 	// Handle changes en save to states
 	const handleChange = (value: string, stateToChange: DraftVersionKeys) => {
-		console.log('Current Post State: ', currentPostState.current);
 		setEditMade(true);
 		switch (stateToChange) {
 			case 'title':
@@ -187,7 +173,7 @@ const BlogEditor = () => {
 					.filter(tag => tag);
 					setPostState(currentData => produce(currentData, draft => { draft.draft_version.tags.push(...newTags);
 					}));
-				} 
+				}
 				break;
 			default:
 				console.log('No state property was chosen');
@@ -209,12 +195,14 @@ const handleSaveChanges = async () => {
 				},
 				published_version: postState.published_version,
 				published_date: postState.published_date,
-				author: postState.author, 
+				author: postState.author,
 				status: postState.status,
 				seo_metadata: postState.seo_metadata
 			}
 
+
 			const result = await saveBlogPost(postToSave);
+            console.log('Saving blog was successful', result)
 			setEditMade(false);
 			setChangesSaved(true);
 		} catch (error) {
@@ -222,7 +210,7 @@ const handleSaveChanges = async () => {
 			setEditMade(true);
 		  }
 	}
-
+    if (isClient) {
 	return(
 	<div id={styles.blogContainer} >
 
@@ -231,14 +219,14 @@ const handleSaveChanges = async () => {
 	<p>This is the post: {post}</p>
 
 
-	<input 
+	<input
 		type="text"
 		value={postState.draft_version.title}
 		onChange={e => handleChange(e.target.value, 'title')}
 		placeholder="Post Title"
 		/>
 
-	<input 
+	<input
 		type="text"
 		value={postState.draft_version.description}
 		onChange={e => handleChange(e.target.value, 'description')}
@@ -251,7 +239,6 @@ const handleSaveChanges = async () => {
 		onChange={e => handleChange(e.target.value, 'tags')}
 		placeholder="Post tags"
 	/>
-
 		<Editor
 			apiKey='gx7vxizmmpdc7eqc9kz4jnxgq84b9dyjkd67jd0j8vi63was'
 			init={{
@@ -265,7 +252,7 @@ const handleSaveChanges = async () => {
 				    ],
 					 ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant")),
 			     }}
-			initialValue={editorInitialized ? undefined : postState.draft_version.body} 
+			initialValue={editorInitialized ? undefined : postState.draft_version.body}
 			onInit={() => {
 				// Set the flag to true once the editor is initialized
 				if (!editorInitialized) {
@@ -281,10 +268,17 @@ const handleSaveChanges = async () => {
 
 		{editMade && <button onClick={handleSaveChanges}>Save Changes</button>}
 		{changesSaved && <button>Publish</button>}
-		
+
 
 	</div>
-	)
+    )
+
+    } else {
+            return (
+                    <div>Loading editor...</div>
+            )
+        }
+
 }
 
 export default BlogEditor;
