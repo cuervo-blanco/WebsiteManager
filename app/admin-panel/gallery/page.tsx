@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import styles from '../../styles/gallery.module.scss'
 import MediaViewer from '../../components/MediaViewer';
 import ImageSlot from  '../../components/ImageSlot';
-import SelectWindow from '../../components/SelectWindow'; 
+import SelectWindow from '../../components/SelectWindow';
 import { updateContent } from '../../utils/fileUploadUtils';
 import LinkEditor from '../../components/LinkEditor';
 import ToggleWindow from '../../components/ToggleWindow';
@@ -18,13 +18,13 @@ const Gallery = () => {
 	const [selectedMedia, setSelectedMedia] = useState<[string, string] | [] >([]);
 	const [selectedItemId, setSelectedItemId] = useState<string>("");
 	const [loadedContent, setLoadedContent] = useState<Content[]>([])
-	const [isEditOptionsVisible, showEditOptions] = useState<boolean>(false);	
+	const [isEditOptionsVisible, showEditOptions] = useState<boolean>(false);
 	const [isMediaGalleryVisible, showMediaGallery] = useState<boolean>(false);
 	const [isEditMade, setEditMade] = useState<boolean>(false);
 	const [isLinkEditorVisible, showLinkEditor] = useState<boolean>(false);
 	const [savedContent, setSavedContent] = useState<Content[]>([]);
 
-		
+
 	useEffect(() => {
 	fetch('/api/get-gallery-content')
             .then(response => response.json())
@@ -37,7 +37,7 @@ const Gallery = () => {
 		const newId = uuidv4();
 		if (kind === 'Media Info Card') {
 			setLoadedContent(currentComponents => [
-				...currentComponents, 
+				...currentComponents,
 				{ section_id: 'p&s: illustrations', connection_id: newId, title: "", description: "", src: "", alt: "", link: "", action: "new" }
 			]);
 		} else if (kind === 'Media Info Card: Press') {
@@ -55,14 +55,14 @@ const Gallery = () => {
 			setLoadedContent(currentComponents => [
 				...currentComponents,
 				{ section_id: 'p&s: posters', connection_id: newId, title: '', description: '', src: '', alt: '', link: '', action: 'new'}
-			]);	
-		
+			]);
+
 		}
 	};
 
 	const updateComponent = (updatedData: Content[]) => {
 			setLoadedContent(updatedData);
-			setEditMade(true);		
+			setEditMade(true);
 		};
 
 
@@ -79,7 +79,7 @@ const Gallery = () => {
 			section_id: section_id,
 			connection_id: unique_id,
 			title: '',
-			description: '', 
+			description: '',
 			src: '',
 			alt: '',
 			link: '',
@@ -103,18 +103,18 @@ const Gallery = () => {
 	const handleItemSelection= (selectedId: string) => {
 		showEditOptions(true);
 		showLinkEditor(false);
-		setSelectedItemId(selectedId);	
+		setSelectedItemId(selectedId);
 	}
 
-	const toggleMediaGalleryVisibility = () => { 
+	const toggleMediaGalleryVisibility = () => {
 		showMediaGallery(true);
 		showEditOptions(false);
-	} 
+	}
 
 	const updateSelectedSlot = () => {
 	setEditMade(true);
 		//First we destructure the src and alt from the selectedImage
-		const [newSrc, newAlt] = selectedMedia || [ '', '' ]; 
+		const [newSrc, newAlt] = selectedMedia || [ '', '' ];
 		//Now we find the index of the image slot with the matching connectionId
 		const indexToUpdate = loadedContent.findIndex(image => image.connection_id === selectedItemId);
 		// If a match is found
@@ -162,15 +162,15 @@ const Gallery = () => {
 		<h1>Welcome to the gallery editor!</h1>
 
 
-		{ isMediaGalleryVisible && <MediaViewer sendSelect={handleMediaSelected} modalWindow={true} setImageSlot={updateSelectedSlot}/> } 
+		{ isMediaGalleryVisible && <MediaViewer sendSelect={handleMediaSelected} modalWindow={true} setImageSlot={updateSelectedSlot}/> }
 		{ isLinkEditorVisible && <LinkEditor items={loadedContent} connection_id={selectedItemId} onItemsUpdate={handleLinkUpdate}/>}
 		{ isEditOptionsVisible && <SelectWindow select={toggleMediaGalleryVisibility} editLink={handleEditLink}/>}
 		{ isEditMade && <button onClick={() => handleSaveChanges(loadedContent)}>Save Changes</button>}
 
-		<ToggleWindow title="Illustrations" rows={3} behavior="fixed"> 
+		<ToggleWindow title="Illustrations" rows={3} behavior="fixed">
 			{loadedContent
 			.filter(slot => slot.section_id === 'illustrations')
-			.map(slot  => ( 
+			.map(slot  => (
 				<ImageSlot
 					key={slot.connection_id}
 					src={slot.src}
@@ -182,12 +182,12 @@ const Gallery = () => {
 					/>
 				))}
 
-				
+
 		</ToggleWindow>
 		<ToggleWindow title="Products & Services" rows={3} behavior="additive" >
-		
 
-		{/*Map through the loadedContent to generate MediaInfoCard components */} 
+
+		{/*Map through the loadedContent to generate MediaInfoCard components */}
 
 		<div id={styles.productsAndServices}>
 
@@ -199,15 +199,15 @@ const Gallery = () => {
 
 		<div id={styles.illustrationSection} className={styles.productsSection}>
 
-		{loadedContent.filter(component => ( 
-			component.section_id === 'p&s: illustrations' && 
+		{loadedContent.filter(component => (
+			component.section_id === 'p&s: illustrations' &&
 			component.action !== 'delete'))
 			.map(component => (
-				<MediaInfoCard key={component.connection_id} 
-				initialData={component} 
-				setSelectedId={handleItemSelection} 
-				updateParent={updateComponent} 
-				deleteThis={deleteComponent} 
+				<MediaInfoCard key={component.connection_id}
+				initialData={component}
+				setSelectedId={handleItemSelection}
+				updateParent={updateComponent}
+				deleteThis={deleteComponent}
 				parentComponent={loadedContent}
 				options="p&s"
 				/>
@@ -216,7 +216,7 @@ const Gallery = () => {
 
 		</div>
 
-	
+
 			<h2>Posters</h2>
 
 		<div id={styles.posterSection} className={styles.productsSection}>
@@ -227,7 +227,7 @@ const Gallery = () => {
 				{loadedContent
 					.filter(slot => slot.section_id === 'p&s: posters' &&
 					slot.action !== 'delete')
-					.map(slot  => ( 
+					.map(slot  => (
 						<ImageSlot
 							key={slot.connection_id}
 							src={slot.src}
@@ -248,15 +248,15 @@ const Gallery = () => {
 
 		<div id={styles['2dAnimationSection']} className={styles.productsSection}>
 
-			{loadedContent.filter(component => ( 
-			component.section_id === 'p&s: 2d animation & motion graphics' && 
+			{loadedContent.filter(component => (
+			component.section_id === 'p&s: 2d animation & motion graphics' &&
 			component.action !== 'delete'))
 			.map(component => (
-				<MediaInfoCard key={component.connection_id} 
-				initialData={component} 
-				setSelectedId={handleItemSelection} 
-				updateParent={updateComponent} 
-				deleteThis={deleteComponent} 
+				<MediaInfoCard key={component.connection_id}
+				initialData={component}
+				setSelectedId={handleItemSelection}
+				updateParent={updateComponent}
+				deleteThis={deleteComponent}
 				parentComponent={loadedContent}
 				options="p&s"
 				/>
@@ -269,15 +269,15 @@ const Gallery = () => {
 			<h2>Character Design</h2>
 				<div id={styles.characterDesignSection} className={styles.productsSection}>
 
-			{loadedContent.filter(component => ( 
+			{loadedContent.filter(component => (
 			component.section_id === 'p&s: character design' &&
 			component.action !== 'delete'))
 			.map(component => (
-				<MediaInfoCard key={component.connection_id} 
-				initialData={component} 
-				setSelectedId={handleItemSelection} 
-				updateParent={updateComponent} 
-				deleteThis={deleteComponent} 
+				<MediaInfoCard key={component.connection_id}
+				initialData={component}
+				setSelectedId={handleItemSelection}
+				updateParent={updateComponent}
+				deleteThis={deleteComponent}
 				parentComponent={loadedContent}
 				options="p&s"
 				/>
@@ -287,12 +287,12 @@ const Gallery = () => {
 		</div>
 		</div>
 		</ToggleWindow>
-			
+
 
 
 
 		<ToggleWindow title="Clients" rows={3} behavior="additive">
-		
+
 		<button onClick={() => addComponent('Simple Text Editor')}> Add </button>
 			{loadedContent.filter (component => (
 				component.section_id === 'clients' &&
@@ -302,31 +302,31 @@ const Gallery = () => {
 				parentComponent={loadedContent}
 				initialData={component}
 				connection_id={component.connection_id}
-				onItemsUpdate={updateComponent} 
+				onItemsUpdate={updateComponent}
 				parts='DS'
 				type='solo'
 				deleteThis={deleteComponent}
-				/> )) 
+				/> ))
 			}
 
 		</ToggleWindow>
-		
+
 		<ToggleWindow title="Press" rows={3} behavior="additive">
 
-		{loadedContent.filter(component => ( 
-			component.section_id === 'press' && 
+		{loadedContent.filter(component => (
+			component.section_id === 'press' &&
 			component.action !== 'delete'))
 			.map(component => (
-				<MediaInfoCard key={component.connection_id} 
-				initialData={component} 
-				setSelectedId={handleItemSelection} 
-				updateParent={updateComponent} 
-				deleteThis={deleteComponent} 
+				<MediaInfoCard key={component.connection_id}
+				initialData={component}
+				setSelectedId={handleItemSelection}
+				updateParent={updateComponent}
+				deleteThis={deleteComponent}
 				parentComponent={loadedContent}
 				options="press"
 				/>
 			))
-		}	
+		}
 
 
 		<button onClick={() => addComponent('Media Info Card: Press')}> Add </button>

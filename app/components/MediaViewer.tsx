@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import styles from '../styles/MediaViewer.module.scss';
 import ImageBlock from './ImageBlock';
 import io from 'socket.io-client';
-import { fetchData } from '../utils/fetchImages'; 
+import { fetchData } from '../utils/fetchImages';
 import { deleteImage } from '../utils/imageGetUtils';
 import { MediaViewer } from '../utils/types';
 
@@ -57,7 +57,6 @@ function MediaViewer({ sendSelect, modalWindow, setImageSlot}: MediaViewer) {
 
 
 	const handleImageSelect = (ImageUrl: string, ImageAlt: string) => {
-	console.log("handleImageSelect called with URL:", selectedMedia);
 	// Pass the selected image URL to the parent component
 		if (selectedMedia.length === 0) {
 			sendSelect([ImageUrl, ImageAlt]);
@@ -91,16 +90,16 @@ function MediaViewer({ sendSelect, modalWindow, setImageSlot}: MediaViewer) {
                 <div>Loading...</div>
             ) : mediaInfo.length > 0 ? (
                 mediaInfo.map(image => (
-                    <ImageBlock 
-                        imgUrl={image.url} 
-                        key={image.image_id} 
-                        id={image.image_id} 
-                        imgAlt={image.alt} 
+                    <ImageBlock
+                        imgUrl={image.url}
+                        key={image.image_id}
+                        id={image.image_id}
+                        imgAlt={image.alt}
                         select={handleImageSelect}
                     />
                 ))
-            ) : ( 
-                <div>No images to display</div> 
+            ) : (
+                <div>No images to display</div>
             )}
 
 			{modalWindow && MediaSelected && <button onClick={setImage}>Select Image</button>}

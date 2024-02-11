@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+require('dotenv').config();
 import './styles/globals.scss'
 
 export const metadata: Metadata = {
@@ -12,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en"> 
+    <html lang="en">
 		<body >{children}</body>
 	</html>
   )

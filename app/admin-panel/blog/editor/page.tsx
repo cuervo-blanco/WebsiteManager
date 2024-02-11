@@ -1,11 +1,12 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import styles from '../../../styles/editor.module.scss';
-import { Editor } from '@tinymce/tinymce-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { saveBlogPost } from '../../../utils/fileUploadUtils'
 import { produce } from "immer";
+import { Editor } from '@tinymce/tinymce-react';
+import MediaViewer from '../../../components/MediaViewer';
 
 type BlogPost = {
 post_id: string,
@@ -26,9 +27,21 @@ seo_metadata: {}
 
 type DraftVersionKeys = 'title' | 'description' | 'tags' | 'body' | 'author';
 
+// Change a title to a slug
+const titleToSlug = (title: string | undefined) => {
+    if (title !== undefined) {
+        return title
+            .toLowerCase()
+            .replace(/[^\w\s]/gi, '')
+            .trim()
+            .replace(/\s+/g, '-')
+    }
+    return '';
+}
 
 const BlogEditor = () => {
 
+    const editorKey = process.env.NEXT_PUBLIC_TINY_MCE_EDITOR_KEY;
     const searchParams = useSearchParams();
     const post = searchParams.get('post');
     const router = useRouter();
@@ -37,6 +50,9 @@ const BlogEditor = () => {
 	const [editorInitialized, setEditorInitialized] = useState(false);
 	const [editMade, setEditMade] = useState(false);
 	const [changesSaved, setChangesSaved] = useState(false);
+    const [showMediaGallery, setShowMediaGallery] = useState<boolean>(false);
+    const [selectedMedia, setSelectedMedia] = useState(['',''])
+    const [editorRef, setEditorRef] = useState(null);
 	const [postState, setPostState] = useState<BlogPost>({
 		post_id: '',
 		draft_version: {
@@ -55,27 +71,17 @@ const BlogEditor = () => {
 	})
     const [isClient, setIsClient] = useState(false);
 
+    /////////----------- SESSION STORAGE METHODS ----------------/////////////
     const getSessionStorageKey = (id: string) => `blogPostState_${id}`;
+
     const loadStateFromSessionStorage = (id: string) => {
         const savedState = sessionStorage.getItem(getSessionStorageKey(id));
         return savedState ? JSON.parse(savedState) : null;
     }
+
     const saveStateToSessionStorage = (id: string, state: BlogPost) => {
         sessionStorage.setItem(getSessionStorageKey(id), JSON.stringify(state));
     };
-
-
-	// Change a title to a slug
-	const titleToSlug = (title: string | undefined) => {
-		if (title !== undefined) {
-		return title
-		.toLowerCase()
-		.replace(/[^\w\s]/gi, '')
-		.trim()
-		.replace(/\s+/g, '-')
-		}
-		return '';
-	}
 
 	// Load Post data function.
 		const loadPostData = async () => {
@@ -140,9 +146,7 @@ const BlogEditor = () => {
                             draftState.post_id = newPostId;
                             draftState.status = 'draft';
                             }));
-                if (saveStateToSessionStorage){
                 router.replace(`/admin-panel/blog/editor?post=${newPostId}`, undefined,{ shallow: true }  )
-                }
                 }
 	}, [post, router]);
 
@@ -179,7 +183,10 @@ const BlogEditor = () => {
 				console.log('No state property was chosen');
 				break;
 		}
-	}
+}
+
+////////----------Handle the Saves into the Database -------/////////////
+
 const handleSaveChanges = async () => {
 		try {
 			const postSlug = titleToSlug(postState.draft_version.title);
@@ -210,15 +217,47 @@ const handleSaveChanges = async () => {
 			setEditMade(true);
 		  }
 	}
-    if (isClient) {
-	return(
+
+	const updateSelectedSlot = () => {
+		const [url, alt] = selectedMedia;
+        insertImageIntoTinyMCE(url, alt);
+        setShowMediaGallery(false);
+		setEditMade(true);
+	}
+
+	const handleMediaSelected = (mediaSelected: [string, string]) => {
+			setSelectedMedia(mediaSelected);
+		}
+
+    const openMediaUploader = () => {
+        //open Media Uploader
+        setShowMediaGallery(true);
+        }
+
+    const handleEditorInit = (editor) => {
+        setEditorRef(editor);
+        setEditorInitialized(true);
+        }
+
+    const insertImageIntoTinyMCE = (url, alt) => {
+        if (editorRef) {
+            editorRef.insertContent(`<img src="${url}" alt="${alt} />`);
+            }
+        }
+
+
+/////////////---------The Actual Component----------/////////////
+
+	return (
 	<div id={styles.blogContainer} >
+        {isClient ? (
+        <>
+        <h1>Welcome to the <em>blog editor</em>!</h1>
+        <p>This is the post: {post}</p>
 
-	<h1>Welcome to the blog editor!</h1>
+        {showMediaGallery &&  <MediaViewer sendSelect={handleMediaSelected} modalWindow={true} setImageSlot={updateSelectedSlot}/> }
 
-	<p>This is the post: {post}</p>
-
-
+{/*Title*/}
 	<input
 		type="text"
 		value={postState.draft_version.title}
@@ -226,6 +265,7 @@ const handleSaveChanges = async () => {
 		placeholder="Post Title"
 		/>
 
+{/*Description*/}
 	<input
 		type="text"
 		value={postState.draft_version.description}
@@ -233,33 +273,47 @@ const handleSaveChanges = async () => {
 		placeholder="Post Description"
 		/>
 
+{/*--------/////////------Tags--------/////////---------
 	<input
 		type="text"
 		value={postState.draft_version.tags}
 		onChange={e => handleChange(e.target.value, 'tags')}
 		placeholder="Post tags"
 	/>
+*/}
+
+{/*Editor*/}
 		<Editor
-			apiKey='gx7vxizmmpdc7eqc9kz4jnxgq84b9dyjkd67jd0j8vi63was'
+			apiKey={editorKey}
 			init={{
-					plugins: 'ai tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss',
-					toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+					plugins: 'tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss',
+					toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | tinycomments | checklist numlist bullist indent outdent | emoticons charmap | removeformat | mediaSelector',
 					tinycomments_mode: 'embedded',
 					tinycomments_author: 'Author name',
+                    setup: function(editor) {
+                        editor.ui.registry.addButton('mediaSelector', {
+                            icon: 'image',
+                            tooltip: 'Insert image from Media Library',
+                            onAction: function(_) {
+                                openMediaUploader();
+                                }
+                            })
+                        },
 					mergetags_list: [
 						{ value: 'First.Name', title: 'First Name' },
 						{ value: 'Email', title: 'Email' },
 				    ],
-					 ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant")),
 			     }}
-			initialValue={editorInitialized ? undefined : postState.draft_version.body}
-			onInit={() => {
+			initialValue={editorInitialized ? undefined : postState.draft_version.body}	    initialValue={editorInitialized ? undefined : postState.draft_version.body}
+			onInit={(evt, editor) => {
 				// Set the flag to true once the editor is initialized
+                handleEditorInit(editor);
+
 				if (!editorInitialized) {
 				setEditorInitialized(true);
 				}
 		}}
-		onEditorChange={(content) => handleChange(content, 'body')}
+		onEditorChange={(content) =>handleChange(content, 'body')}
 		/>
 		<label>Author: </label>
 		<select	id="author" onChange={e => handleChange(e.target.value, 'author')}>
@@ -269,16 +323,14 @@ const handleSaveChanges = async () => {
 		{editMade && <button onClick={handleSaveChanges}>Save Changes</button>}
 		{changesSaved && <button>Publish</button>}
 
+</>
 
-	</div>
-    )
-
-    } else {
-            return (
+    ) : (
                     <div>Loading editor...</div>
-            )
-        }
+        )}
 
-}
+    </div>
+
+)};
 
 export default BlogEditor;
