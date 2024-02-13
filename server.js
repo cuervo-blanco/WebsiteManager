@@ -63,9 +63,9 @@ app.prepare().then(() => {
   server.use(passport.authenticate('session'));
 
   // Login route
-  server.post('/api/login/password', (req, res, next) => { 
-    next(); 
-  }, passport.authenticate('local', { successRedirect: '/admin-panel', failureRedirect: '/' }), 
+  server.post('/api/login/password', (req, res, next) => {
+    next();
+  }, passport.authenticate('local', { successRedirect: '/admin-panel', failureRedirect: '/' }),
   );
 
   // Logout route
@@ -82,7 +82,7 @@ app.prepare().then(() => {
       const userId = req.user.id;
       const pages = await getUserPages(userId);
       res.json(pages);
-    } catch (error) { 
+    } catch (error) {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
@@ -93,22 +93,24 @@ app.prepare().then(() => {
       const userId = req.user.id;
       const galleryContent = await getGalleryContent(userId);
       res.json(galleryContent);
-    } catch (error) { 
-      res.status(500).json({ error: 'Internal Server Error' });
+    } catch (error) {
+      res.status(500).json({ error: 'internal server error' });
     }
   });
 
- server.post('/admin-panel/api/save-changes', async (req, res, next) => { 
+
+ server.post('/admin-panel/api/save-changes', async (req, res, next) => {
+
 		try{
 
 		const changes = req.body.changes;
 		const userId = req.user.id;
 		const result = await saveChangesGallery(userId, changes);
 		res.json(result);
-		
+
 		} catch(err){
 			res.status(500).json({error: 'Internal Server Error'});
-		}	
+		}
 	}
   );
 
@@ -124,7 +126,7 @@ app.prepare().then(() => {
 		}
 	});
 
-	
+
 	server.get('/api/auth-check', (req, res) => {
 	 const isAuthenticated = req.isAuthenticated();
 	 // Render the Next.js homepage with the authentication statu
@@ -153,7 +155,7 @@ server.get('/admin-panel/media', ensureAuthenticated, (req, res) => {
 	});
 server.get('/admin-panel/settings', ensureAuthenticated, (req, res) => {
 		 return app.render(req, res, '/admin-panel/settings', req.query);
-	});  
+	});
 
 // Catch-all route for Next.js page handling
  server.get('*', (req, res) => {

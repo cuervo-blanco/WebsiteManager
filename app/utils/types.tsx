@@ -52,4 +52,24 @@ export type Item = Pick<BasicContent, 'connection_id' | 'link'>;
 
 
 
+export type BlogPost = {
+post_id: string,
+draft_version: {
+  title: string,
+  description: string,
+  body: string,
+  slug: string,
+  tags: string[],
+  featured_image: string
+},
+published_version: string,
+published_date: string,
+author: string,
+status: string,
+seo_metadata: {}
+}
+
+export type DraftVersionKeys = 'title' | 'description' | 'tags' | 'body' | 'author';
+
+
 

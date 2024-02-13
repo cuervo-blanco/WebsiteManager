@@ -3,29 +3,12 @@ import React, { useEffect, useState } from 'react';
 import styles from '../../../styles/editor.module.scss';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
-import { saveBlogPost } from '../../../utils/fileUploadUtils'
+import { saveBlogPost, getPost, publishBlogPost } from '../../../utils/fileUploadUtils'
+import { BlogPost, DraftVersionKeys } from '../../../utils/types';
 import { produce } from "immer";
 import { Editor } from '@tinymce/tinymce-react';
 import MediaViewer from '../../../components/MediaViewer';
 
-type BlogPost = {
-post_id: string,
-draft_version: {
-  title: string,
-  description: string,
-  body: string,
-  slug: string,
-  tags: string[],
-  featured_image: string
-},
-published_version: string,
-published_date: string,
-author: string,
-status: string,
-seo_metadata: {}
-}
-
-type DraftVersionKeys = 'title' | 'description' | 'tags' | 'body' | 'author';
 
 // Change a title to a slug
 const titleToSlug = (title: string | undefined) => {
@@ -38,6 +21,7 @@ const titleToSlug = (title: string | undefined) => {
     }
     return '';
 }
+
 
 const BlogEditor = () => {
 
@@ -86,8 +70,7 @@ const BlogEditor = () => {
 	// Load Post data function.
 		const loadPostData = async () => {
 			try {
-				const response = await fetch(`/api/blog/editor/${post}`)
-				const postData = await response.json();
+				const postData: BlogPost = getPost(post);
 
 					setPostState(currentData => produce(currentData, draft => {
 						draft.post_id = postData.post_id;
@@ -133,7 +116,7 @@ const BlogEditor = () => {
                                 draft.published_date = savedState.published_date;
                                 draft.status = savedState.author;
                                 draft.published_version = savedState.published_version;
-                                draft.seo_metadata = savedState.seo_metadata;
+                               draft.seo_metadata = savedState.seo_metadata;
                                 }));
                 } else {
                     // Fetch post data or handle as missing post
@@ -162,7 +145,7 @@ const BlogEditor = () => {
 	const handleChange = (value: string, stateToChange: DraftVersionKeys) => {
 		setEditMade(true);
 		switch (stateToChange) {
-			case 'title':
+            case 'title':
 			case 'description':
 			case 'body':
 				setPostState(currentData => produce(currentData, draft => { draft.draft_version[stateToChange] = value}));
@@ -189,7 +172,9 @@ const BlogEditor = () => {
 
 const handleSaveChanges = async () => {
 		try {
+            // Nos recoge el titulo y nos lo convierte a un slug .
 			const postSlug = titleToSlug(postState.draft_version.title);
+            // Recogemos la información que se ha guardado en el State.
 			const postToSave: BlogPost = {
 				post_id: postState.post_id,
 				draft_version: {
@@ -217,6 +202,14 @@ const handleSaveChanges = async () => {
 			setEditMade(true);
 		  }
 	}
+
+
+    const handlePublishPost = async () => {
+        const result = await publishBlogPost(postState.post_id);
+        console.log('Publishing blog post was successful', result)
+        setEditMade(false);
+        setChangesSaved(false);
+    }
 
 	const updateSelectedSlot = () => {
 		const [url, alt] = selectedMedia;
@@ -253,8 +246,6 @@ const handleSaveChanges = async () => {
         {isClient ? (
         <>
         <h1>Welcome to the <em>blog editor</em>!</h1>
-        <p>This is the post: {post}</p>
-
         {showMediaGallery &&  <MediaViewer sendSelect={handleMediaSelected} modalWindow={true} setImageSlot={updateSelectedSlot}/> }
 
 {/*Title*/}
@@ -304,8 +295,8 @@ const handleSaveChanges = async () => {
 						{ value: 'Email', title: 'Email' },
 				    ],
 			     }}
-			initialValue={editorInitialized ? undefined : postState.draft_version.body}	    initialValue={editorInitialized ? undefined : postState.draft_version.body}
-			onInit={(evt, editor) => {
+			initialValue={editorInitialized ? undefined : postState.draft_version.body}
+            onInit={(evt, editor) => {
 				// Set the flag to true once the editor is initialized
                 handleEditorInit(editor);
 
@@ -321,7 +312,7 @@ const handleSaveChanges = async () => {
 		</select>
 
 		{editMade && <button onClick={handleSaveChanges}>Save Changes</button>}
-		{changesSaved && <button>Publish</button>}
+		{changesSaved && <button onClick={handlePublishPost}>Publish</button>}
 
 </>
 

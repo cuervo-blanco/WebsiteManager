@@ -66,7 +66,7 @@ export const updateContent = async (changes) => {
 
 export const saveBlogPost = async (blogPost) => {
 	try {
-		const response = await fetch('http://localhost:3002/api/save-blog-post', {
+		const response = await fetch('http://localhost:3002/save-blog-post', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -89,8 +89,8 @@ export const saveBlogPost = async (blogPost) => {
 }
 
 export const publishBlogPost = async (post_id) => {
-		try { 
-		const response = await fetch('http://localhost:3002/api/publish-post', {
+		try {
+		const response = await fetch('http://localhost:3002/publish-post', {
 			method: 'POST',
 			headers: {
 				'Content-Type':  'application/json',
@@ -111,3 +111,43 @@ export const publishBlogPost = async (post_id) => {
 		}
 }
 
+export const getPost = async (post_id) => {
+    try {
+        const response = await fetch(`http://localhost:3002/api/get-post/${post_id}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json',
+            },
+        });
+            if (!response.ok){
+                throw new Error(`Error getting blog post: ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            return result;
+    } catch (error) {
+        console.error('Error getting blog post', error);
+        throw error;
+    }
+}
+
+export const getPostList = async () => {
+    try {
+        const response = await fetch('http://localhost:3002/get-post-list', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok){
+            throw new Error(`Error getting list of posts: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log(response.json);
+        return result;
+
+    } catch (error) {
+
+    }
+}
