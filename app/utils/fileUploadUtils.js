@@ -113,7 +113,7 @@ export const publishBlogPost = async (post_id) => {
 
 export const getPost = async (post_id) => {
     try {
-        const response = await fetch(`http://localhost:3002/api/get-post/${post_id}`, {
+        const response = await fetch(`http://localhost:3002/get-post/${post_id}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json',
             },

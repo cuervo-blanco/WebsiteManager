@@ -23,11 +23,12 @@ const titleToSlug = (title: string | undefined) => {
 }
 
 
-const BlogEditor = () => {
+const BlogEditor = ({
+    params } : {
+        params: { post_id: string };
+    }) => {
 
     const editorKey = process.env.NEXT_PUBLIC_TINY_MCE_EDITOR_KEY;
-    const searchParams = useSearchParams();
-    const post = searchParams.get('post');
     const router = useRouter();
 
 	// States: used to store the values the user will be changing
@@ -70,7 +71,9 @@ const BlogEditor = () => {
 	// Load Post data function.
 		const loadPostData = async () => {
 			try {
-				const postData: BlogPost = getPost(post);
+				// const postData: BlogPost = await getPost(id);
+                const postData = JSON.parse(sessionStorage.getItem('postToEdit'));
+                console.log(postData);
 
 					setPostState(currentData => produce(currentData, draft => {
 						draft.post_id = postData.post_id;
@@ -80,9 +83,9 @@ const BlogEditor = () => {
 						draft.draft_version.tags = postData.draft_version.tags;
 						draft.draft_version.featured_image = postData.draft_version.featured_image;
 						draft.draft_version.slug = postData.draft_version.slug;
-						draft.author = postData.slug;
+						draft.author = postData.author;
 						draft.published_date = postData.published_date;
-						draft.status = postData.author;
+						draft.status = postData.status;
 						draft.published_version = postData.published_version;
 						draft.seo_metadata = postData.seo_metadata;
 					}));
@@ -100,9 +103,8 @@ const BlogEditor = () => {
 
 	useEffect(() => {
             console.log('initial load')
-        if (typeof post === 'string' && post !== 'new') {
-            const savedState = loadStateFromSessionStorage(post);
-            console.log(savedState);
+        if (typeof params.post_id === 'string' && params.post_id !== 'new') {
+            const savedState = loadStateFromSessionStorage(params.post_id);
             if (savedState){
                     setPostState(currentData => produce(currentData, draft => {
                                 draft.post_id = savedState.post_id;
@@ -123,15 +125,16 @@ const BlogEditor = () => {
                     console.log('Loading from server');
 			       loadPostData();
                     }
-            } else if (post === 'new'){
+            } else if (params.post_id === 'new'){
+
                 const newPostId = uuidv4();
                 setPostState(currentState => produce(currentState, draftState => {
                             draftState.post_id = newPostId;
                             draftState.status = 'draft';
                             }));
-                router.replace(`/admin-panel/blog/editor?post=${newPostId}`, undefined,{ shallow: true }  )
+                router.replace(`/admin-panel/blog/${newPostId}`, undefined,{ shallow: true }  )
                 }
-	}, [post, router]);
+	}, [params.post_id, router]);
 
 	// useEffect for initializing Session Storage and handling the unmount and recall of the post data
 
@@ -238,6 +241,8 @@ const handleSaveChanges = async () => {
             }
         }
 
+    console.log('This is the params post: ',params.post_id);
+
 
 /////////////---------The Actual Component----------/////////////
 
@@ -246,6 +251,7 @@ const handleSaveChanges = async () => {
         {isClient ? (
         <>
         <h1>Welcome to the <em>blog editor</em>!</h1>
+
         {showMediaGallery &&  <MediaViewer sendSelect={handleMediaSelected} modalWindow={true} setImageSlot={updateSelectedSlot}/> }
 
 {/*Title*/}
