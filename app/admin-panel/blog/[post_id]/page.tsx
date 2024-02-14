@@ -8,6 +8,8 @@ import { BlogPost, DraftVersionKeys } from '../../../utils/types';
 import { produce } from "immer";
 import { Editor } from '@tinymce/tinymce-react';
 import MediaViewer from '../../../components/MediaViewer';
+import ImageSlot from '../../../components/ImageSlot';
+import SelectWindow from '../../../components/SelectWindow';
 
 
 // Change a title to a slug
@@ -34,10 +36,13 @@ const BlogEditor = ({
 	// States: used to store the values the user will be changing
 	const [editorInitialized, setEditorInitialized] = useState(false);
 	const [editMade, setEditMade] = useState(false);
+    const [selectedItemId, setSelectedItemId] = useState('');
+    const [isImageSlotSelected, setImageSlotSelected] = useState(false);
 	const [changesSaved, setChangesSaved] = useState(false);
     const [showMediaGallery, setShowMediaGallery] = useState<boolean>(false);
     const [selectedMedia, setSelectedMedia] = useState(['',''])
     const [editorRef, setEditorRef] = useState(null);
+    const [isEditOptionsVisible, showEditOptions] = useState<boolean>(false);
 	const [postState, setPostState] = useState<BlogPost>({
 		post_id: '',
 		draft_version: {
@@ -46,7 +51,7 @@ const BlogEditor = ({
 			body: '',
 			slug: '',
 			tags: [''],
-			featured_image: ''
+			featured_image: '',
 		},
 		published_version: '',
 		published_date: '',
@@ -73,7 +78,6 @@ const BlogEditor = ({
 			try {
 				// const postData: BlogPost = await getPost(id);
                 const postData = JSON.parse(sessionStorage.getItem('postToEdit'));
-                console.log(postData);
 
 					setPostState(currentData => produce(currentData, draft => {
 						draft.post_id = postData.post_id;
@@ -216,9 +220,19 @@ const handleSaveChanges = async () => {
 
 	const updateSelectedSlot = () => {
 		const [url, alt] = selectedMedia;
-        insertImageIntoTinyMCE(url, alt);
-        setShowMediaGallery(false);
-		setEditMade(true);
+        if (isImageSlotSelected === false){
+            insertImageIntoTinyMCE(url, alt);
+            setShowMediaGallery(false);
+            setEditMade(true);
+        } else if (isImageSlotSelected === true) {
+            setPostState(currentData => produce(currentData, draft => {
+                                draft.draft_version.featured_image = url }));
+            setEditMade(true);
+            setShowMediaGallery(false);
+            setImageSlotSelected(false);
+        }
+
+        //Now here is must take the selected media and use the selectedItemId to link it to the imageSlot (if the imageslot was selected)
 	}
 
 	const handleMediaSelected = (mediaSelected: [string, string]) => {
@@ -237,13 +251,26 @@ const handleSaveChanges = async () => {
 
     const insertImageIntoTinyMCE = (url, alt) => {
         if (editorRef) {
-            editorRef.insertContent(`<img src="${url}" alt="${alt} />`);
+            editorRef.insertContent(`<img src=\"${url}\" alt=\"${alt}\" />`);
             }
         }
 
     console.log('This is the params post: ',params.post_id);
 
+	const handleItemSelection= (selectedId: string) => {
+		showEditOptions(true);
+        setImageSlotSelected(true);
+		setSelectedItemId(selectedId);
+	}
 
+	const toggleMediaGalleryVisibility = () => {
+		setShowMediaGallery(true);
+		showEditOptions(false);
+	}
+
+    const handleEditLink = () => {
+        /// Don't do anything
+    }
 /////////////---------The Actual Component----------/////////////
 
 	return (
@@ -252,7 +279,18 @@ const handleSaveChanges = async () => {
         <>
         <h1>Welcome to the <em>blog editor</em>!</h1>
 
-        {showMediaGallery &&  <MediaViewer sendSelect={handleMediaSelected} modalWindow={true} setImageSlot={updateSelectedSlot}/> }
+        { showMediaGallery  &&  <MediaViewer sendSelect={handleMediaSelected} modalWindow={true} setImageSlot={updateSelectedSlot}/> }
+		{ isEditOptionsVisible && <SelectWindow select={toggleMediaGalleryVisibility} editLink={handleEditLink} hasLink={false}/>}
+
+                    {/* Featured Image */}
+				<ImageSlot
+					src={postState.draft_version.featured_image}
+					alt=""
+					link=""
+					setSelectedId={handleItemSelection}
+					connection_id={postState.post_id}
+					type="illustration"
+					/>
 
 {/*Title*/}
 	<input
@@ -289,7 +327,7 @@ const handleSaveChanges = async () => {
 					tinycomments_author: 'Author name',
                     setup: function(editor) {
                         editor.ui.registry.addButton('mediaSelector', {
-                            icon: 'image',
+                            icon: 'gallery',
                             tooltip: 'Insert image from Media Library',
                             onAction: function(_) {
                                 openMediaUploader();

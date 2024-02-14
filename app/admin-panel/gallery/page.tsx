@@ -164,7 +164,7 @@ const Gallery = () => {
 
 		{ isMediaGalleryVisible && <MediaViewer sendSelect={handleMediaSelected} modalWindow={true} setImageSlot={updateSelectedSlot}/> }
 		{ isLinkEditorVisible && <LinkEditor items={loadedContent} connection_id={selectedItemId} onItemsUpdate={handleLinkUpdate}/>}
-		{ isEditOptionsVisible && <SelectWindow select={toggleMediaGalleryVisibility} editLink={handleEditLink}/>}
+         { isEditOptionsVisible && <SelectWindow select={toggleMediaGalleryVisibility} editLink={handleEditLink} hasLink={true}/>}
 		{ isEditMade && <button onClick={() => handleSaveChanges(loadedContent)}>Save Changes</button>}
 
 		<ToggleWindow title="Illustrations" rows={3} behavior="fixed">
