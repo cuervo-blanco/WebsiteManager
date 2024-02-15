@@ -89,7 +89,7 @@ const BlogEditor = ({
 						draft.draft_version.slug = postData.draft_version.slug;
 						draft.author = postData.author;
 						draft.published_date = postData.published_date;
-						draft.status = postData.status;
+						draft.status = 'Edit';
 						draft.published_version = postData.published_version;
 						draft.seo_metadata = postData.seo_metadata;
 					}));
@@ -118,9 +118,9 @@ const BlogEditor = ({
                                 draft.draft_version.tags = savedState.draft_version.tags;
                                 draft.draft_version.featured_image = savedState.draft_version.featured_image;
                                 draft.draft_version.slug = savedState.draft_version.slug;
-                                draft.author = savedState.author;
+                                draft.author = savedState.slug;
                                 draft.published_date = savedState.published_date;
-                                draft.status = savedState.status;
+                                draft.status = savedState.author;
                                 draft.published_version = savedState.published_version;
                                draft.seo_metadata = savedState.seo_metadata;
                                 }));
@@ -178,7 +178,6 @@ const BlogEditor = ({
 ////////----------Handle the Saves into the Database -------/////////////
 
 const handleSaveChanges = async () => {
-        console.log('Saving post with status:', postState.status);
 		try {
             // Nos recoge el titulo y nos lo convierte a un slug .
 			const postSlug = titleToSlug(postState.draft_version.title);
@@ -199,6 +198,8 @@ const handleSaveChanges = async () => {
 				status: postState.status,
 				seo_metadata: postState.seo_metadata
 			}
+
+            console.log('Post to save:', postToSave);
 
 			const result = await saveBlogPost(postToSave);
             console.log('Saving blog was successful', result)

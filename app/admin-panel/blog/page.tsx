@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../../styles/blog.module.scss';
-import {getPostList} from '../../utils/fileUploadUtils';
+import { getPostList, deletePost } from '../../utils/fileUploadUtils';
 import {BlogPost} from '../../utils/types';
 
 const Blog = () => {
@@ -10,10 +10,19 @@ const Blog = () => {
 const router = useRouter();
 
     const [postList, setPostList] = useState<BlogPost[]>([]);
+    const [refreshFlag, setRefreshFlag] = useState(false);
 
 
-    const handlePostDelete = (post_id) => {
+    const handlePostDelete = async (post_id) => {
         // make server request to delete post
+        try {
+            const result = await deletePost(post_id);
+            console.log('Post was successfully deleted', result);
+            // Trigger refresh
+            setRefreshFlag(prevFlag => !prevFlag);
+        } catch (error) {
+            console.error('Error deleting post', error);
+        }
     }
 
 useEffect(() => {
@@ -29,7 +38,7 @@ useEffect(() => {
             }
         };
         fetchPosts();
-    }, [])
+    }, [refreshFlag])
 
     const editPost = (id: string) => {
         const postToEdit = postList.find(post => post.post_id === id);

@@ -65,6 +65,7 @@ export const updateContent = async (changes) => {
 }
 
 export const saveBlogPost = async (blogPost) => {
+    console.log('Post to save:', blogPost)
 	try {
 		const response = await fetch('http://localhost:3002/save-blog-post', {
 			method: 'POST',
@@ -86,6 +87,31 @@ export const saveBlogPost = async (blogPost) => {
 		console.error('Error saving the blog post', error);
 		throw error;
 	}
+}
+
+export const deletePost = async (post_id) => {
+    try {
+        const response = await fetch('http://localhost:3002/delete-blog-post', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({  postId: post_id})
+        });
+
+        if (!response.ok) {
+           throw new Error(`Error deleting blog post to website's server: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        return result;
+
+    } catch (error) {
+        console.error('Error deleting the blog post', error);
+        throw error;
+    }
+
 }
 
 export const publishBlogPost = async (post_id) => {
