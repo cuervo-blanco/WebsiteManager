@@ -1,0 +1,55 @@
+$dark-orange: #e68a00; // Considered for highlights or accents
+
+#fileUploaderContainer {
+  border: 2px solid white; // Simplified, white border
+  background-color: black; // Black background
+  padding: 24px;
+  width: 100%;
+  max-width: 500px; // Limit max width for better aesthetics
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px; // Add space between elements
+
+  label[for="fileInput"] {
+    padding: 10px 20px;
+    background-color: $dark-orange; // Use for button to stand out or consider a neutral color
+    color: white;
+    cursor: pointer;
+    border-radius: 4px; // Rounded corners for a modern look
+    margin-bottom: 12px; // Space before the next element
+  }
+
+  input[type="text"] {
+    width: 100%; // Responsive to container width
+    max-width: 480px; // Ensure it doesn't exceed container padding
+    padding: 12px; // Adjusted for better text visibility
+    margin: 0; // Aligns with design minimalism
+    border: 1px solid white; // White border for contrast
+    background-color: black;
+    color: white; // Text color
+    text-align: center;
+  }
+
+  button {
+    padding: 10px 20px;
+    background-color: transparent; // Clear background for minimalism
+    color: white; // Button text color
+    border: 2px solid white; // White border
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s; // Smooth transition for hover
+
+    &:hover {
+      background-color: white; // Invert colors on hover
+      color: black;
+    }
+  }
+
+  img {
+    margin-top: 12px; // Space from the last input
+    border: 1px solid white; // White border for image
+    border-radius: 4px; // Optional: rounded corners for images
+  }
+}
+

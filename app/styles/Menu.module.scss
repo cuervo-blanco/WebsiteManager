@@ -1,0 +1,30 @@
+@import 'variables';
+
+#menuContainer{
+    width: 100%;
+    height: 100px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-family: sans-serif;
+
+    ul{
+        display: flex;
+        flex-direction: row;
+        list-style: none;
+
+        li{
+            margin: 10px;
+        }
+    }
+
+    button{
+        border: none;
+        width: 100px;
+        height: 60%;
+        font-size: 15px;
+        cursor: pointer;
+    }
+}

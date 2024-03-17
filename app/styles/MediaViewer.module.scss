@@ -1,8 +1,64 @@
-#mediaViewerContainer{
+.mediaViewerContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  background-color: black;
+  color: white;
+  border: 2px solid white;
+  padding: 24px;
+  width: auto;
 
-width: 100%;
-height: auto;
-display: flex;
-flex-wrap: wrap;
-gap: 10px;
+  // Centers the content for the standard view, and adjusts max-width for responsiveness
+  &.standardView {
+    max-width: 800px;
+    margin: auto;
+  }
+
+  // Applies a fixed, centered modal style for the modal view
+  &.modalView {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1050;
+    width: 80%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  // Styles for the close button, enhancing accessibility and user feedback
+  .closeButton {
+    align-self: flex-end;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+
+    &:hover {
+      color: #ccc;
+    }
+  }
+
+
+  // Ensures buttons are visually consistent and responsive to user interactions
+  .paginationButton, button {
+    cursor: pointer;
+    background-color: transparent;
+    border: 1px solid white;
+    color: white;
+    padding: 10px 15px;
+    margin: 5px;
+    border-radius: 4px;
+
+    &:hover {
+      background-color: white;
+      color: black;
+    }
+  }
 }
+

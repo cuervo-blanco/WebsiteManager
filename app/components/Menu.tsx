@@ -1,10 +1,10 @@
 'use client';
-import React, { useEffect, useState } from 'react'; 
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link'
 import styles from '../styles/Menu.module.scss';
 
 const Menu = () => {
-		
+
 		const [menuItems, setMenuItems] = useState([]);
 
 	useEffect(() => {
@@ -31,7 +31,7 @@ const Menu = () => {
 
 
 	return (
-		
+
 		<div id={styles.menuContainer}>
 		<ul><li><Link href="/admin-panel">Dashboard</Link></li>{menuItems}<li ><Link href="/admin-panel/settings" >Settings</Link></li></ul>
 		<button onClick={handleLogout}>Log Out</button>

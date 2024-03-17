@@ -19,6 +19,7 @@ function MediaViewer({ sendSelect, modalWindow, setImageSlot}: MediaViewer) {
 	const [loading, setLoading] = useState(true);
 	const [MediaSelected, setMediaSelected] = useState(false);
 	const isMounted = useRef(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
 
 
@@ -81,10 +82,17 @@ function MediaViewer({ sendSelect, modalWindow, setImageSlot}: MediaViewer) {
 	}
 
 	// Render the MediaViewer component
-    return (
-        <div id={styles.mediaViewerContainer}>
+return (
+    <div className={`${styles.mediaViewerContainer} ${modalWindow && isModalOpen ? styles.modalView : styles.standardView}`}>
+        {modalWindow && isModalOpen && (
+            <button className={styles.closeButton} onClick={() => setIsModalOpen(false)}>×</button>
+        )}
+
             {/* Display delete button if an image is selected */}
-            {selectedMedia.length !== 0 && <button onClick={() => handleDeleteMedia(selectedMedia[0])}>Delete</button>}
+            {selectedMedia.length !== 0 && (
+                <button onClick={() => handleDeleteMedia(selectedMedia[0])}>Delete</button>
+            )}
+
             {/* Render loading state, images, or 'no images' message based on the current state */}
             {loading ? (
                 <div>Loading...</div>
@@ -96,18 +104,29 @@ function MediaViewer({ sendSelect, modalWindow, setImageSlot}: MediaViewer) {
                         id={image.image_id}
                         imgAlt={image.alt}
                         select={handleImageSelect}
+                        modalView={modalWindow}
                     />
                 ))
             ) : (
-                <div>No images to display</div>
+               <div>No images to display</div>
             )}
 
-			{modalWindow && MediaSelected && <button onClick={setImage}>Select Image</button>}
+            {modalWindow && MediaSelected && <button onClick={setImage}>Select Image</button>}
 
-            {/* Pagination buttons */}
-            {page > 1 && <button onClick={() => setPage(page - 1)}>Previous</button>}
-            {page < totalPages && <button onClick={() => setPage(page + 1)}>Next</button>}
-        </div>
-    );
+            {/* Pagination controls */}
+            <div>
+                {page > 1 && (
+                    <button className={styles.paginationButton} onClick={() => setPage(page - 1)}>
+                        Previous
+                    </button>
+                )}
+                {page < totalPages && (
+                    <button className={styles.paginationButton} onClick={() => setPage(page + 1)}>
+                        Next
+                    </button>
+                )}
+            </div>
+    </div>
+);
 }
 export default MediaViewer;

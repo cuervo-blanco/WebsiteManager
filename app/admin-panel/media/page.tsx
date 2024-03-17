@@ -14,7 +14,7 @@ const Media = () => {
 		<FileUploader />
 		<MediaViewer sendSelect={null} modalWindow={false}/>
 
-	</div>	
+	</div>
 	)
 }
 
