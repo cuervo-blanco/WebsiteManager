@@ -18,7 +18,7 @@
     "express": "^4.21.0",
     "express-session": "^1.17.3",
     "immer": "^10.0.3",
-    "next": "14.0.4",
+    "next": "14.2.10",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.11.3",
